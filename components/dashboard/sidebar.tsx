@@ -1,0 +1,192 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import {
+  LayoutDashboard,
+  FileText,
+  Tag,
+  Lock,
+  Calendar,
+  History,
+  Receipt,
+  User,
+  LogOut,
+  Menu,
+  X,
+} from 'lucide-react'
+import { Logo } from '@/components/shared'
+import { cn } from '@/lib/utils'
+
+const mainNavItems = [
+  {
+    label: 'Dashboard',
+    href: '/dashboard',
+    icon: LayoutDashboard,
+  },
+  {
+    label: 'Post Options',
+    href: '/dashboard/post-options',
+    icon: FileText,
+  },
+  {
+    label: 'Rider Options',
+    href: '/dashboard/rider-options',
+    icon: Tag,
+  },
+  {
+    label: 'Lockbox Options',
+    href: '/dashboard/lockbox-options',
+    icon: Lock,
+  },
+]
+
+const orderNavItems = [
+  {
+    label: 'Place Order',
+    href: '/dashboard/place-order',
+    icon: Calendar,
+  },
+  {
+    label: 'Order History',
+    href: '/dashboard/order-history',
+    icon: History,
+  },
+  {
+    label: 'Invoices',
+    href: '/dashboard/invoices',
+    icon: Receipt,
+  },
+]
+
+const accountNavItems = [
+  {
+    label: 'Profile',
+    href: '/dashboard/profile',
+    icon: User,
+  },
+]
+
+const Sidebar = () => {
+  const pathname = usePathname()
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
+
+  const NavLink = ({
+    href,
+    icon: Icon,
+    label,
+  }: {
+    href: string
+    icon: typeof LayoutDashboard
+    label: string
+  }) => {
+    const isActive = pathname === href
+
+    return (
+      <Link
+        href={href}
+        onClick={() => setIsMobileOpen(false)}
+        className={cn(
+          'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all',
+          isActive
+            ? 'bg-pink-500 text-white'
+            : 'text-pink-100 hover:bg-pink-500/50 hover:text-white'
+        )}
+      >
+        <Icon className="w-5 h-5" />
+        {label}
+      </Link>
+    )
+  }
+
+  const SidebarContent = () => (
+    <>
+      {/* Logo */}
+      <div className="p-6 border-b border-pink-500/30">
+        <Logo variant="light" size="md" />
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
+        {/* Main Navigation */}
+        <div className="space-y-1">
+          {mainNavItems.map((item) => (
+            <NavLink key={item.href} {...item} />
+          ))}
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-pink-500/30" />
+
+        {/* Orders */}
+        <div className="space-y-1">
+          {orderNavItems.map((item) => (
+            <NavLink key={item.href} {...item} />
+          ))}
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-pink-500/30" />
+
+        {/* Account */}
+        <div className="space-y-1">
+          {accountNavItems.map((item) => (
+            <NavLink key={item.href} {...item} />
+          ))}
+        </div>
+      </nav>
+
+      {/* Logout */}
+      <div className="p-4 border-t border-pink-500/30">
+        <button className="flex items-center gap-3 px-4 py-2.5 w-full rounded-lg text-sm font-medium text-pink-100 hover:bg-pink-500/50 hover:text-white transition-all">
+          <LogOut className="w-5 h-5" />
+          Sign Out
+        </button>
+      </div>
+    </>
+  )
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-pink-600 text-white rounded-lg shadow-lg"
+      >
+        <Menu className="w-6 h-6" />
+      </button>
+
+      {/* Mobile Overlay */}
+      {isMobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      <aside
+        className={cn(
+          'lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-pink-600 flex flex-col transition-transform duration-300',
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        <button
+          onClick={() => setIsMobileOpen(false)}
+          className="absolute top-4 right-4 p-2 text-white hover:bg-pink-500 rounded-lg"
+        >
+          <X className="w-5 h-5" />
+        </button>
+        <SidebarContent />
+      </aside>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-pink-600">
+        <SidebarContent />
+      </aside>
+    </>
+  )
+}
+
+export { Sidebar }
