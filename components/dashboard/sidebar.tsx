@@ -54,8 +54,8 @@ const orderNavItems = [
     icon: History,
   },
   {
-    label: 'Invoices',
-    href: '/dashboard/invoices',
+    label: 'Billing',
+    href: '/dashboard/billing',
     icon: Receipt,
   },
 ]

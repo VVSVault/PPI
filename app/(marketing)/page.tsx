@@ -1,7 +1,8 @@
 import {
   Hero,
+  PostShowcase,
   ValueProposition,
-  PostPreview,
+  TripCallout,
   FAQSection,
   CTABanner,
 } from '@/components/marketing'
@@ -10,8 +11,9 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <PostShowcase />
       <ValueProposition />
-      <PostPreview />
+      <TripCallout />
       <FAQSection />
       <CTABanner />
     </>

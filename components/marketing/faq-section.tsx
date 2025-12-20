@@ -8,37 +8,31 @@ const faqs = [
     id: 'installation-speed',
     question: 'How quickly can you install my sign?',
     answer:
-      'We offer same-day installation for orders placed before 12pm. Standard installation is within 24 hours. We also offer scheduled installations if you need the sign up on a specific date.',
+      'We offer next day installation for orders placed before 4pm. We strive for same day installations for an expedite fee if possible. We can also schedule installations for a specific date.',
   },
   {
     id: 'service-areas',
-    question: 'What areas do you service?',
+    question: 'What areas do you serve?',
     answer:
-      'We currently service the greater Lexington area and Central Kentucky, including Fayette, Scott, Woodford, Jessamine, Clark, Madison, and Bourbon counties. Contact us for service in other areas.',
+      'We currently serve the greater Lexington, Central Kentucky, Louisville, and Cincinnati and surrounding areas!',
   },
   {
     id: 'damaged-posts',
     question: 'What happens if my post is damaged?',
     answer:
-      'If your post is damaged due to normal wear or weather, we\'ll replace it for our standard replacement fee. If the damage was caused by our installation or service, we\'ll replace it at no charge.',
+      'If your post is damaged due to weather or normal wear and tear, notify us and we will replace for no cost within 24 hours. We strive for same day service, and replacement orders are always on priority.',
   },
   {
     id: 'own-signs',
     question: 'Can I use my own signs?',
     answer:
-      'Yes, we can install your own signs on our posts. Just provide the sign during scheduling or have it ready at the property. Standard installation fees apply.',
-  },
-  {
-    id: 'schedule-removal',
-    question: 'How do I schedule a removal?',
-    answer:
-      'Log into your dashboard and click "Schedule Removal" next to any active installation. You can also call us directly for same-day removal requests.',
+      'Yes, we install your sign on our posts. Just provide the sign for us to hold in storage, or have ready for pickup at the property and we will install.',
   },
   {
     id: 'payment-terms',
     question: 'What are your payment terms?',
     answer:
-      'We invoice weekly for all services rendered. Payment is due within 14 days. We accept all major credit cards, ACH transfers, and checks. Set up autopay in your dashboard for convenience.',
+      'Payment is made during each order for what you ordered. There are no storage fees and we will keep your inventory amounts available in your dashboard for anytime you need to order.',
   },
 ]
 

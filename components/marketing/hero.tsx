@@ -3,13 +3,13 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, Zap, Package, DollarSign } from 'lucide-react'
 import { Button } from '@/components/ui'
 
-const features = [
-  'Same-day installation',
-  'Professional presentation',
-  'GPS-tracked service',
+const keyPoints = [
+  { icon: Zap, text: 'Next Day Installation' },
+  { icon: DollarSign, text: 'One Low Fee — includes install AND pickup' },
+  { icon: Package, text: 'We Store Your Inventory' },
 ]
 
 const Hero = () => {
@@ -25,12 +25,15 @@ const Hero = () => {
             className="text-center lg:text-left"
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-              Your Signs,{' '}
-              <span className="text-pink-500">Installed with Care.</span>
+              We take care of the dirty work,{' '}
+              <span className="text-pink-500">so you can focus on closing more deals!</span>
             </h1>
-            <p className="mt-6 text-lg md:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0">
-              Central Kentucky&apos;s trusted yard sign installation service for
-              real estate professionals.
+            <p className="mt-6 text-xl md:text-2xl text-pink-600 font-semibold">
+              Stay clean... and warm!
+            </p>
+            <p className="mt-4 text-lg text-gray-600 max-w-xl mx-auto lg:mx-0">
+              Premium yard sign installation service for real estate professionals
+              in Lexington, Louisville, Cincinnati, and surrounding areas.
             </p>
 
             {/* CTA Buttons */}
@@ -53,25 +56,27 @@ const Hero = () => {
                   </svg>
                 </Button>
               </Link>
-              <Link href="#pricing">
+              <Link href="/sign-in">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                  View Pricing
+                  Sign In
                 </Button>
               </Link>
             </div>
 
-            {/* Feature List */}
-            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              {features.map((feature, index) => (
+            {/* Key Points */}
+            <div className="mt-10 space-y-3">
+              {keyPoints.map((point, index) => (
                 <motion.div
-                  key={feature}
+                  key={point.text}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
-                  className="flex items-center gap-2 text-gray-700"
+                  className="flex items-center gap-3 justify-center lg:justify-start"
                 >
-                  <CheckCircle className="w-5 h-5 text-pink-500 flex-shrink-0" />
-                  <span className="text-sm font-medium">{feature}</span>
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center">
+                    <CheckCircle className="w-5 h-5 text-pink-500" />
+                  </div>
+                  <span className="text-gray-700 font-medium">{point.text}</span>
                 </motion.div>
               ))}
             </div>
@@ -90,6 +95,7 @@ const Hero = () => {
                 alt="Pink Post Installation"
                 fill
                 className="object-cover"
+                style={{ objectPosition: 'center 15%' }}
                 priority
               />
             </div>

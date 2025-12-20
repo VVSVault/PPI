@@ -1,0 +1,145 @@
+'use client'
+
+import Image from 'next/image'
+import { Building2, Home, HardHat, Building, LandPlot } from 'lucide-react'
+import { Input } from '@/components/ui'
+import { cn } from '@/lib/utils'
+import type { StepProps } from '../types'
+import type { PropertyType } from '@/types/database'
+
+const propertyTypes: Array<{
+  value: PropertyType
+  label: string
+  description: string
+  icon: React.ElementType
+}> = [
+  {
+    value: 'commercial',
+    label: 'Commercial Property',
+    description: 'A business location',
+    icon: Building2,
+  },
+  {
+    value: 'house',
+    label: 'House / Mobile Home',
+    description: 'Single family dwelling',
+    icon: Home,
+  },
+  {
+    value: 'construction',
+    label: 'Active Construction Site',
+    description: 'New build in progress',
+    icon: HardHat,
+  },
+  {
+    value: 'multi_family',
+    label: 'Multi-Family Dwelling',
+    description: 'Condo, apartment, etc.',
+    icon: Building,
+  },
+  {
+    value: 'bare_land',
+    label: 'Bare Land',
+    description: 'No structure on property',
+    icon: LandPlot,
+  },
+]
+
+export function PropertyStep({ formData, updateFormData }: StepProps) {
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Property Information</h2>
+        <p className="text-gray-600">Tell us about the property where you need the sign installed.</p>
+      </div>
+
+      {/* Property Type Selection */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-3">
+          Property Type *
+        </label>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {propertyTypes.map((type) => (
+            <button
+              key={type.value}
+              type="button"
+              onClick={() => updateFormData({ property_type: type.value })}
+              className={cn(
+                'flex flex-col items-center p-4 rounded-xl border-2 transition-all text-center',
+                formData.property_type === type.value
+                  ? 'border-pink-500 bg-pink-50'
+                  : 'border-gray-200 hover:border-gray-300 bg-white'
+              )}
+            >
+              <type.icon
+                className={cn(
+                  'w-8 h-8 mb-2',
+                  formData.property_type === type.value
+                    ? 'text-pink-500'
+                    : 'text-gray-400'
+                )}
+              />
+              <span className="text-sm font-medium text-gray-900">{type.label}</span>
+              <span className="text-xs text-gray-500 mt-1">{type.description}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Address Fields */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="md:col-span-2">
+          <Input
+            label="Street Address *"
+            value={formData.property_address}
+            onChange={(e) => updateFormData({ property_address: e.target.value })}
+            placeholder="123 Main Street"
+          />
+        </div>
+        <Input
+          label="City *"
+          value={formData.property_city}
+          onChange={(e) => updateFormData({ property_city: e.target.value })}
+          placeholder="Lexington"
+        />
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="State"
+            value={formData.property_state}
+            onChange={(e) => updateFormData({ property_state: e.target.value })}
+            placeholder="KY"
+          />
+          <Input
+            label="ZIP Code *"
+            value={formData.property_zip}
+            onChange={(e) => updateFormData({ property_zip: e.target.value })}
+            placeholder="40502"
+          />
+        </div>
+      </div>
+
+      {/* Installation Details */}
+      <div className="space-y-4">
+        <Input
+          label="Installation Location"
+          value={formData.installation_location}
+          onChange={(e) => updateFormData({ installation_location: e.target.value })}
+          placeholder="e.g., Front yard near mailbox"
+          helperText="Where on the property should we install the sign?"
+        />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Special Instructions
+          </label>
+          <textarea
+            value={formData.installation_notes}
+            onChange={(e) => updateFormData({ installation_notes: e.target.value })}
+            placeholder="Gate codes, access instructions, or other notes..."
+            rows={3}
+            className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all resize-none"
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
