@@ -238,7 +238,7 @@ export function ReviewStep({
         ) : (
           <div className="text-center py-6 text-gray-500">
             <p>No saved payment methods.</p>
-            <p className="text-sm mt-1">You'll be redirected to add a card after clicking "Place Order".</p>
+            <p className="text-sm mt-1">You&apos;ll be redirected to add a card after clicking &quot;Place Order&quot;.</p>
           </div>
         )}
 

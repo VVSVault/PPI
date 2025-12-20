@@ -140,7 +140,7 @@ export function SchedulingStep({ formData, updateFormData }: StepProps) {
       {formData.schedule_type === 'expedited' && (
         <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
           <strong>Note:</strong> Same day installations are subject to availability and our current schedule.
-          We'll contact you to confirm if same day service is possible.
+          We&apos;ll contact you to confirm if same day service is possible.
         </div>
       )}
     </div>

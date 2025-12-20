@@ -79,8 +79,8 @@ export default function AdminSettingsPage() {
               Manage admin access and permissions.
             </p>
             <p className="text-sm text-gray-500">
-              To add admin users, update the role field in the profiles table to 'admin'
-              via Supabase dashboard.
+              To add admin users, update the role field in the profiles table to &apos;admin&apos;
+              via Prisma Studio or database.
             </p>
           </CardContent>
         </Card>

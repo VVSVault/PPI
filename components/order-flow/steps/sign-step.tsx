@@ -85,7 +85,7 @@ export function SignStep({ formData, updateFormData, inventory }: StepProps) {
           </div>
           <div className="flex-1">
             <h3 className="font-semibold text-gray-900">Sign will be at the property</h3>
-            <p className="text-sm text-gray-600">Leave the sign on-site and we'll install it</p>
+            <p className="text-sm text-gray-600">Leave the sign on-site and we&apos;ll install it</p>
             <p className="text-sm font-medium text-pink-600 mt-1">Install fee: ${PRICING.sign_install.toFixed(2)}</p>
           </div>
         </button>

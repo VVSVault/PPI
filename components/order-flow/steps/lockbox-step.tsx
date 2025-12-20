@@ -44,7 +44,7 @@ export function LockboxStep({ formData, updateFormData, inventory }: StepProps) 
           </div>
           <div className="flex-1">
             <h3 className="font-semibold text-gray-900">My SentriLock</h3>
-            <p className="text-sm text-gray-600">We'll install your SentriLock lockbox</p>
+            <p className="text-sm text-gray-600">We&apos;ll install your SentriLock lockbox</p>
             <p className="text-sm font-medium text-pink-600 mt-1">Install fee: ${PRICING.lockbox_install.toFixed(2)}</p>
           </div>
         </button>
@@ -75,7 +75,7 @@ export function LockboxStep({ formData, updateFormData, inventory }: StepProps) 
           </div>
           <div className="flex-1">
             <h3 className="font-semibold text-gray-900">My Mechanical Lockbox</h3>
-            <p className="text-sm text-gray-600">We'll install your mechanical lockbox</p>
+            <p className="text-sm text-gray-600">We&apos;ll install your mechanical lockbox</p>
             <p className="text-sm font-medium text-pink-600 mt-1">Install fee: ${PRICING.lockbox_install.toFixed(2)}</p>
           </div>
         </button>
@@ -118,7 +118,7 @@ export function LockboxStep({ formData, updateFormData, inventory }: StepProps) 
           </div>
           <div className="flex-1">
             <h3 className="font-semibold text-gray-900">Rent Mechanical Lockbox</h3>
-            <p className="text-sm text-gray-600">We'll provide a mechanical lockbox for your listing</p>
+            <p className="text-sm text-gray-600">We&apos;ll provide a mechanical lockbox for your listing</p>
             <p className="text-sm font-medium text-pink-600 mt-1">Rental fee: ${PRICING.lockbox_rental.toFixed(2)}</p>
           </div>
         </button>
@@ -155,7 +155,7 @@ export function LockboxStep({ formData, updateFormData, inventory }: StepProps) 
       </div>
 
       <div className="p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
-        <p><strong>Note:</strong> SentriLock lockboxes are agent-owned only. Mechanical lockboxes can be rented for ${PRICING.lockbox_rental} per order or we'll install your own for ${PRICING.lockbox_install}.</p>
+        <p><strong>Note:</strong> SentriLock lockboxes are agent-owned only. Mechanical lockboxes can be rented for ${PRICING.lockbox_rental} per order or we&apos;ll install your own for ${PRICING.lockbox_install}.</p>
       </div>
     </div>
   )

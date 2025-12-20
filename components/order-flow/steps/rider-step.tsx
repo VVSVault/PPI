@@ -71,7 +71,7 @@ export function RiderStep({ formData, updateFormData, inventory }: StepProps) {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Add Riders</h2>
-        <p className="text-gray-600">Optional - Select any riders you'd like to add to your installation.</p>
+        <p className="text-gray-600">Optional - Select any riders you&apos;d like to add to your installation.</p>
       </div>
 
       {/* Pricing Info */}
