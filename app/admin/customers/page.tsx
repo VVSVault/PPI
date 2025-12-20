@@ -122,17 +122,17 @@ export default function CustomersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <Badge variant={customer.sign_count > 0 ? 'default' : 'secondary'}>
+                      <Badge variant={customer.sign_count > 0 ? 'info' : 'neutral'}>
                         {customer.sign_count}
                       </Badge>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <Badge variant={customer.rider_count > 0 ? 'default' : 'secondary'}>
+                      <Badge variant={customer.rider_count > 0 ? 'info' : 'neutral'}>
                         {customer.rider_count}
                       </Badge>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <Badge variant={customer.lockbox_count > 0 ? 'default' : 'secondary'}>
+                      <Badge variant={customer.lockbox_count > 0 ? 'info' : 'neutral'}>
                         {customer.lockbox_count}
                       </Badge>
                     </td>
