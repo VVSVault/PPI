@@ -349,7 +349,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                         {new Date(order.created_at).toLocaleDateString()}
                       </td>
                       <td className="py-3">
-                        <Badge variant={order.status === 'completed' ? 'success' : 'default'}>
+                        <Badge variant={order.status === 'completed' ? 'success' : 'neutral'}>
                           {order.status}
                         </Badge>
                       </td>
