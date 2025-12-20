@@ -49,21 +49,21 @@ const getStatusIcon = (status: string) => {
   }
 }
 
-const getStatusVariant = (status: string): 'default' | 'success' | 'warning' | 'error' | 'secondary' => {
+const getStatusVariant = (status: string): 'info' | 'success' | 'warning' | 'error' | 'neutral' => {
   switch (status) {
     case 'pending':
       return 'warning'
     case 'confirmed':
     case 'scheduled':
-      return 'default'
+      return 'info'
     case 'in_progress':
-      return 'default'
+      return 'info'
     case 'completed':
       return 'success'
     case 'cancelled':
       return 'error'
     default:
-      return 'secondary'
+      return 'neutral'
   }
 }
 
