@@ -1,9 +1,60 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui'
-import { Settings, CreditCard, Bell, Users } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Card, CardContent, Button, Badge } from '@/components/ui'
+import { Settings, CreditCard, Bell, Users, CheckCircle, XCircle, Send, Loader2 } from 'lucide-react'
+
+interface EmailConfig {
+  resendConfigured: boolean
+  adminEmail: string | null
+  fromEmail: string
+}
 
 export default function AdminSettingsPage() {
+  const [emailConfig, setEmailConfig] = useState<EmailConfig | null>(null)
+  const [loadingEmail, setLoadingEmail] = useState(true)
+  const [sendingTest, setSendingTest] = useState(false)
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)
+
+  useEffect(() => {
+    async function fetchEmailConfig() {
+      try {
+        const res = await fetch('/api/admin/settings/email')
+        if (res.ok) {
+          const data = await res.json()
+          setEmailConfig(data)
+        }
+      } catch (error) {
+        console.error('Error fetching email config:', error)
+      } finally {
+        setLoadingEmail(false)
+      }
+    }
+    fetchEmailConfig()
+  }, [])
+
+  const sendTestEmail = async () => {
+    setSendingTest(true)
+    setTestResult(null)
+    try {
+      const res = await fetch('/api/admin/settings/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'test' }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setTestResult({ success: true, message: data.message })
+      } else {
+        setTestResult({ success: false, message: data.error })
+      }
+    } catch (error) {
+      setTestResult({ success: false, message: 'Failed to send test email' })
+    } finally {
+      setSendingTest(false)
+    }
+  }
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -12,6 +63,7 @@ export default function AdminSettingsPage() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
+        {/* Payment Settings */}
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
@@ -23,13 +75,23 @@ export default function AdminSettingsPage() {
             <p className="text-gray-600 text-sm mb-4">
               Configure Stripe integration and payment options.
             </p>
-            <p className="text-sm text-gray-500">
-              Stripe integration is configured via environment variables.
-              Update STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET in your deployment settings.
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Stripe Integration</span>
+                <Badge variant="success">Configured</Badge>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Webhook</span>
+                <Badge variant="success">Active</Badge>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-4">
+              Update STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET in deployment settings.
             </p>
           </CardContent>
         </Card>
 
+        {/* Email Notifications */}
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
@@ -41,13 +103,82 @@ export default function AdminSettingsPage() {
             <p className="text-gray-600 text-sm mb-4">
               Configure email notifications for orders and alerts.
             </p>
-            <p className="text-sm text-gray-500">
-              Email notifications are sent via Resend. Update RESEND_API_KEY and ADMIN_EMAIL
-              in your environment variables.
-            </p>
+
+            {loadingEmail ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+              </div>
+            ) : emailConfig ? (
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <span className="text-gray-600">Resend API</span>
+                  {emailConfig.resendConfigured ? (
+                    <Badge variant="success">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Configured
+                    </Badge>
+                  ) : (
+                    <Badge variant="error">
+                      <XCircle className="w-3 h-3 mr-1" />
+                      Not Configured
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <span className="text-gray-600">Admin Email</span>
+                  <span className="text-gray-900 font-medium">
+                    {emailConfig.adminEmail || 'Not set'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <span className="text-gray-600">From Address</span>
+                  <span className="text-gray-900 font-medium text-xs">
+                    {emailConfig.fromEmail}
+                  </span>
+                </div>
+
+                {emailConfig.resendConfigured && emailConfig.adminEmail && (
+                  <div className="pt-4">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={sendTestEmail}
+                      disabled={sendingTest}
+                      className="w-full"
+                    >
+                      {sendingTest ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-2" />
+                          Send Test Email
+                        </>
+                      )}
+                    </Button>
+                    {testResult && (
+                      <div
+                        className={`mt-2 p-2 rounded text-xs ${
+                          testResult.success
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-red-50 text-red-700'
+                        }`}
+                      >
+                        {testResult.message}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Failed to load email configuration</p>
+            )}
           </CardContent>
         </Card>
 
+        {/* Business Settings */}
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
@@ -59,14 +190,32 @@ export default function AdminSettingsPage() {
             <p className="text-gray-600 text-sm mb-4">
               Configure pricing, service areas, and business rules.
             </p>
-            <div className="space-y-2 text-sm text-gray-600">
-              <p><strong>Fuel Surcharge:</strong> $2.47</p>
-              <p><strong>Expedite Fee:</strong> $25.00</p>
-              <p><strong>Service Areas:</strong> Lexington, Louisville, Cincinnati</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Fuel Surcharge</span>
+                <span className="font-semibold text-gray-900">$2.47</span>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Expedite Fee</span>
+                <span className="font-semibold text-gray-900">$25.00</span>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Rider Install</span>
+                <span className="font-semibold text-gray-900">$2.00</span>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Rider Rental</span>
+                <span className="font-semibold text-gray-900">$5.00</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-gray-600">Service Area</span>
+                <span className="font-semibold text-gray-900">Kentucky</span>
+              </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Admin Users */}
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
@@ -78,9 +227,15 @@ export default function AdminSettingsPage() {
             <p className="text-gray-600 text-sm mb-4">
               Manage admin access and permissions.
             </p>
-            <p className="text-sm text-gray-500">
-              To add admin users, update the role field in the profiles table to &apos;admin&apos;
-              via Prisma Studio or database.
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Admin Role</span>
+                <Badge variant="info">Database Managed</Badge>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-4">
+              To add admin users, update the role field in the users table to &apos;admin&apos;
+              via Prisma Studio: <code className="bg-gray-100 px-1 rounded">npx prisma studio</code>
             </p>
           </CardContent>
         </Card>

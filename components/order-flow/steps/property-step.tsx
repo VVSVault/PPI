@@ -1,7 +1,8 @@
 'use client'
 
+import { useRef } from 'react'
 import Image from 'next/image'
-import { Building2, Home, HardHat, Building, LandPlot } from 'lucide-react'
+import { Building2, Home, HardHat, Building, LandPlot, Paperclip, X } from 'lucide-react'
 import { Input } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import type { StepProps } from '../types'
@@ -46,6 +47,38 @@ const propertyTypes: Array<{
 ]
 
 export function PropertyStep({ formData, updateFormData }: StepProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImageAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image must be less than 5MB')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      updateFormData({ installation_location_image: reader.result as string })
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const removeImage = () => {
+    updateFormData({ installation_location_image: undefined })
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -120,13 +153,60 @@ export function PropertyStep({ formData, updateFormData }: StepProps) {
 
       {/* Installation Details */}
       <div className="space-y-4">
-        <Input
-          label="Installation Location"
-          value={formData.installation_location}
-          onChange={(e) => updateFormData({ installation_location: e.target.value })}
-          placeholder="e.g., Front yard near mailbox"
-          helperText="Where on the property should we install the sign?"
-        />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Installation Location
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              value={formData.installation_location}
+              onChange={(e) => updateFormData({ installation_location: e.target.value })}
+              placeholder="e.g., Front yard near mailbox"
+              className="w-full px-4 py-2.5 pr-12 rounded-lg border border-gray-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-pink-500 transition-colors"
+              title="Attach image"
+            >
+              <Paperclip className="w-5 h-5" />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageAttach}
+              className="hidden"
+            />
+          </div>
+          <p className="mt-1 text-sm text-gray-500">
+            Where on the property should we install the sign?
+          </p>
+
+          {/* Image Preview */}
+          {formData.installation_location_image && (
+            <div className="mt-3 relative inline-block">
+              <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-gray-200">
+                <Image
+                  src={formData.installation_location_image}
+                  alt="Installation location"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                title="Remove image"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Special Instructions

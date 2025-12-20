@@ -20,7 +20,7 @@ Pink Post Installations is a premium yard sign installation service platform for
 | Authentication | NextAuth.js (Credentials Provider) |
 | Payments | Stripe (Elements, Payment Intents) |
 | Email | Resend |
-| Hosting | Vercel (recommended) |
+| Hosting | Railway (current) or Vercel |
 
 ---
 
@@ -104,6 +104,7 @@ pink-post-installations/
 
 - Hero section with tagline: "We take care of the dirty work, so you can focus on closing more deals!"
 - Post showcase (White, Black, Pink vinyl posts)
+- Rider selection callout (27+ options: Sold, Pending, Coming Soon, etc.)
 - Value propositions (6 key benefits)
 - Trip services callout
 - FAQ section
@@ -133,7 +134,7 @@ The order wizard guides customers through 9 steps:
 1. **Property Information** - Address, property type, installation notes
 2. **Post Selection** - White ($55), Black ($55), or Pink ($65)
 3. **Sign Selection** - Use stored sign, sign at property, or no sign
-4. **Rider Selection** - Rent riders ($5) or install own ($2)
+4. **Rider Selection** - Categorized accordion selector with 27+ options (Sold, Pending, Coming Soon, bedrooms, property features, and more). Rent for $5 or install own for $2
 5. **Lockbox Selection** - SentriLock, mechanical (own or rental)
 6. **Brochure Box** - Use stored, buy new, or skip
 7. **Scheduling** - Next available, specific date, or expedited
@@ -218,8 +219,25 @@ The order wizard guides customers through 9 steps:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/installations` | List user's installations |
+| GET | `/api/installations/[id]` | Get installation details |
 | POST | `/api/installations/[id]/schedule-removal` | Schedule removal |
 | POST | `/api/installations/[id]/add-rider` | Add rider to installation |
+| POST | `/api/installations/[id]/service-request` | Create service/removal request |
+
+### Service Requests
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/admin/service-requests` | List all service requests (admin) |
+| GET | `/api/admin/service-requests/[id]` | Get service request details (admin) |
+| PUT | `/api/admin/service-requests/[id]` | Update request status (admin) |
+
+### Profile
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/profile` | Get user profile |
+| PUT | `/api/profile` | Update user profile |
 
 ### Payments
 
@@ -353,7 +371,14 @@ npm run db:seed
 npm run dev
 ```
 
-### 7. Deploy to Vercel
+### 7. Deploy to Railway (Current)
+
+1. Push to GitHub
+2. Connect Railway to your GitHub repository
+3. Add environment variables in Railway dashboard
+4. Railway auto-deploys on push to main
+
+**Alternative: Deploy to Vercel**
 
 1. Push to GitHub
 2. Import to Vercel
@@ -409,8 +434,10 @@ WHERE email = 'user@example.com';
 |------|-------------|
 | `components/order-flow/order-wizard.tsx` | Main order wizard with step navigation |
 | `components/order-flow/steps/*.tsx` | Individual step components |
+| `components/order-flow/RiderSelector/` | Categorized rider selection with accordions |
 | `components/marketing/hero.tsx` | Landing page hero section |
 | `components/marketing/post-showcase.tsx` | Post display section |
+| `components/marketing/rider-callout.tsx` | Rider options callout section |
 | `components/dashboard/sidebar.tsx` | Dashboard navigation |
 | `app/admin/layout.tsx` | Admin layout with auth check |
 
@@ -429,6 +456,140 @@ WHERE email = 'user@example.com';
 ---
 
 ## Changelog
+
+### v2.7.0 (Service Requests & Installation Actions)
+
+- **New:** ServiceRequest model for tracking service/removal requests
+  - Types: removal, service, repair, replacement
+  - Status workflow: pending → acknowledged → scheduled → in_progress → completed
+  - Stores customer notes, admin notes, requested date, completion date
+  - **Requires migration:** `npx prisma migrate dev --name add_service_requests`
+- **New:** Active installations dropdown menu actions
+  - **View Details**: Modal showing installation info, riders, lockboxes, service history
+  - **Schedule Removal**: Modal with date picker to request sign removal
+  - **Request Service**: Modal to submit repair/service/replacement requests
+- **New:** Admin service requests page (`/admin/service-requests`)
+  - Status cards with counts (Pending, Acknowledged, Scheduled, In Progress, Completed)
+  - Clickable filters by status and request type
+  - Detail modal with ability to acknowledge, schedule, mark complete, or cancel
+  - Admin notes field for internal tracking
+  - Auto-updates installation status when removal is completed
+- **New:** Service requests API endpoints
+  - `GET /api/installations/[id]` - Fetch installation details with related data
+  - `POST /api/installations/[id]/service-request` - Create service/removal request
+  - `GET /api/admin/service-requests` - List all requests with counts (admin)
+  - `GET/PUT /api/admin/service-requests/[id]` - Get/update request (admin)
+- **Updated:** Admin dashboard overview
+  - New "Service Requests" card showing pending count
+  - Orange ring highlight when requests need attention
+  - Links directly to service requests page
+- **Updated:** Admin sidebar with Service Requests nav item
+- **Updated:** Replacement fee policy
+  - Removed replacement fee mentions from all public-facing pages
+  - Removed from: lockbox-options, rider-options, riders page, posts page
+  - Added disclosure to order review step: "Lost, damaged, or unreturned rental items are subject to replacement fees"
+
+### v2.6.0 (Spec Verification & Fixes)
+
+- **New:** Installation location image attachment feature
+  - Paperclip button on installation location field allows photo uploads
+  - Image preview with remove option
+  - Max 5MB, validates image file type
+  - Stored as base64 in database
+  - **Requires migration:** `npx prisma migrate dev --name add_installation_location_image`
+- **New:** Order confirmation page (`/dashboard/order-confirmation`)
+  - Shows order details, items, and totals after successful order
+  - "What's Next" section explaining installation process
+  - Links to order history and place another order
+- **New:** Profile API endpoint (`/api/profile`)
+  - GET: Fetch user profile (name, email, phone, company)
+  - PUT: Update profile fields
+- **New:** Single order API endpoint (`/api/orders/[id]`)
+  - GET: Fetch order details for confirmation page
+- **Updated:** Lockbox options page with correct pricing
+  - SentriLock: $5 install (customer-owned only)
+  - Mechanical (Owned): $5 install
+  - Mechanical (Rental): $15 per order
+  - Updated terms to clarify "per order, not monthly"
+- **Updated:** RiderSelector with rental terms link
+  - "View Rental Terms & Conditions" link opens /riders#terms in new tab
+  - Added `id="terms"` anchor to riders page terms section
+- **Updated:** Profile page with real data persistence
+  - Loads profile from API on mount
+  - Saves changes via PUT /api/profile
+  - Shows loading state
+- **Removed:** Invoices page (not needed per spec - payment at order time)
+  - Deleted `/dashboard/invoices/page.tsx`
+  - Deleted `components/dashboard/invoice-table.tsx`
+  - Updated notification preferences wording (invoices → orders)
+
+### v2.5.0 (Admin Dashboard Enhancements)
+
+- **New:** Global inventory overview page (`/admin/inventory`)
+  - Summary cards showing total signs, riders, lockboxes, brochure boxes
+  - Filter by item type (All, Signs, Riders, Lockboxes, Brochure Boxes)
+  - Search by description or customer name
+  - Links to customer detail pages for management
+- **New:** Email configuration API (`/api/admin/settings/email`)
+  - GET: Returns Resend API status, admin email, from address
+  - POST: Send test email to verify configuration
+- **Updated:** Admin settings page with live email configuration
+  - Shows Resend API configured/not configured status
+  - Displays admin email and from address
+  - "Send Test Email" button with success/error feedback
+  - Displays business pricing settings (fuel surcharge, expedite fee, rider prices)
+- **Updated:** Admin sidebar logo with color-aware branding
+  - "Pink" in white, "Post" in pink, "Admin" in gray
+
+### v2.4.0 (Inventory-Aware Selection)
+
+- **Updated:** Order flow is now fully inventory-aware
+  - Shows cheaper "from storage" options ($2) when customers have inventory
+  - Falls back to rental/new options when no inventory available
+- **Updated:** `/api/inventory` endpoint now returns properly formatted data
+  - Signs: `{ id, description, size }`
+  - Riders: Aggregated by type with quantity counts
+  - Lockboxes: `{ id, lockbox_type, lockbox_code }`
+  - Brochure boxes: `{ quantity }` or null
+  - Filters to only items currently in storage
+- **Updated:** Review step shows source distinction per spec
+  - Riders: "Rider Install: [Type] (from storage)" or "Rider Rental: [Type]"
+  - Signs: "Sign Install (from storage)" vs "Sign Install"
+  - Brochure box: "Brochure Box Install (from storage)" or "Brochure Box (New)"
+- **Updated:** OrderItem model with new fields
+  - `itemCategory`: 'storage', 'rental', 'new', or 'owned'
+  - Reference IDs: `customerSignId`, `customerRiderId`, `customerLockboxId`, `customerBrochureBoxId`
+  - `customValue`: For custom acres or other custom inputs
+- **Updated:** Order submission saves item categories and inventory references
+- **Note:** Requires database migration: `npx prisma migrate dev`
+
+### v2.3.0 (Rider Selector Redesign & Lockbox Update)
+
+- **New:** RiderSelector component with categorized accordion UI
+  - Popular riders section for quick access (Sold, Pending, Coming Soon, For Sale)
+  - Category accordions: Status, Bedrooms, Property Features, Rental & Lease, Special
+  - Custom Acres input with live preview
+  - Source toggle: "My Riders" ($2) vs "Rent Riders" ($5)
+  - Selected riders summary with total pricing
+- **New:** RiderCallout component on landing page showcasing rider options
+- **Updated:** Rider Options dashboard page with accordion-style category browsing
+- **Updated:** Order wizard Step 4 now uses the new RiderSelector
+- **Removed:** Riders link from landing page navbar (content now in callout section)
+- **Removed:** Supra eKey lockbox option (AZ-specific, not available in Kentucky)
+
+### v2.2.0 (Build Fixes & UI Updates)
+
+- **Security:** Upgraded Next.js to 14.2.35 (fixes CVE-2025-55184, CVE-2025-67779)
+- **Build Fixes:**
+  - Fixed ESLint errors (escaped quotes in JSX)
+  - Fixed Badge component variant types (use `info`/`neutral` instead of `default`/`secondary`)
+  - Added `helperText` prop to Input component
+  - Added `post_type` to order validation schema
+  - Fixed Stripe webhook to use `findFirst` then `update` (non-unique field handling)
+  - Made Resend and Stripe clients lazy-initialized (prevents build-time API key errors)
+  - Simplified prisma.config.ts (removed invalid properties)
+- **UI Updates:**
+  - Updated post showcase styling ("White, Black, Pink" text colors without backgrounds)
 
 ### v2.1.0 (Railway Migration)
 

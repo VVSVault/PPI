@@ -1,6 +1,7 @@
 import {
   Hero,
   PostShowcase,
+  RiderCallout,
   ValueProposition,
   TripCallout,
   FAQSection,
@@ -12,6 +13,7 @@ export default function HomePage() {
     <>
       <Hero />
       <PostShowcase />
+      <RiderCallout />
       <ValueProposition />
       <TripCallout />
       <FAQSection />

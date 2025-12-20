@@ -13,6 +13,7 @@ import {
   LogOut,
   Menu,
   X,
+  Wrench,
 } from 'lucide-react'
 import { Logo } from '@/components/shared'
 import { cn } from '@/lib/utils'
@@ -21,6 +22,7 @@ const navItems = [
   { href: '/admin', label: 'Overview', icon: LayoutDashboard },
   { href: '/admin/customers', label: 'Customers', icon: Users },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/admin/service-requests', label: 'Service Requests', icon: Wrench },
   { href: '/admin/inventory', label: 'Inventory', icon: Package },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ]
@@ -80,8 +82,8 @@ export default function AdminLayout({
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-800">
             <Link href="/admin" className="flex items-center gap-2">
-              <Logo className="h-8 w-auto" />
-              <span className="text-white font-semibold">Admin</span>
+              <Logo variant="light" className="h-8 w-auto" />
+              <span className="text-gray-400 font-semibold">Admin</span>
             </Link>
             <button
               className="lg:hidden text-gray-400 hover:text-white"

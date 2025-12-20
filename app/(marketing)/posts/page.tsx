@@ -13,7 +13,6 @@ const posts = [
       'Our classic white PVC post offers timeless elegance that complements any property style. Durable, weather-resistant, and maintenance-free.',
     installationFee: 55,
     reinstallFee: 35,
-    replacementFee: 75,
     image: '/images/posts/white-post.png',
     features: [
       'Premium PVC construction',
@@ -29,7 +28,6 @@ const posts = [
       'Modern sophistication with a sleek black finish. Perfect for upscale listings and agents who want a contemporary look.',
     installationFee: 55,
     reinstallFee: 35,
-    replacementFee: 75,
     image: '/images/posts/black-post.png',
     features: [
       'Premium PVC construction',
@@ -45,7 +43,6 @@ const posts = [
       'Stand out from the crowd with our signature pink post. A bold statement that gets noticed and remembered.',
     installationFee: 65,
     reinstallFee: 40,
-    replacementFee: 85,
     image: '/images/posts/pink-post.png',
     featured: true,
     features: [
@@ -160,14 +157,6 @@ export default function PostsPage() {
                             </td>
                             <td className="px-4 py-3 text-sm font-semibold text-gray-900 text-right">
                               ${post.reinstallFee}.00
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="px-4 py-3 text-sm text-gray-600">
-                              Replacement Fee
-                            </td>
-                            <td className="px-4 py-3 text-sm font-semibold text-gray-900 text-right">
-                              ${post.replacementFee}.00
                             </td>
                           </tr>
                         </tbody>

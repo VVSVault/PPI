@@ -86,6 +86,7 @@ model User {
   customerLockboxes CustomerLockbox[]
   customerBrochureBoxes CustomerBrochureBox[]
   paymentMethods  PaymentMethod[]
+  serviceRequests ServiceRequest[]
 
   @@map("users")
 }
@@ -220,6 +221,7 @@ model Order {
   propertyZip       String        @map("property_zip")
   propertyType      PropertyType  @default(residential) @map("property_type")
   propertyNotes     String?       @map("property_notes")
+  installationLocationImage String? @map("installation_location_image") @db.Text
 
   // Scheduling
   scheduledDate     DateTime?     @map("scheduled_date")
@@ -252,13 +254,19 @@ model OrderItem {
   id          String   @id @default(cuid())
   orderId     String   @map("order_id")
   itemType    String   @map("item_type")
+  itemCategory String? @map("item_category") // 'storage', 'rental', 'new', 'owned'
   description String
   quantity    Int      @default(1)
   unitPrice   Decimal  @db.Decimal(10, 2) @map("unit_price")
   totalPrice  Decimal  @db.Decimal(10, 2) @map("total_price")
 
-  // Optional references
-  riderId     String?  @map("rider_id")
+  // Optional references to customer inventory
+  riderId              String?  @map("rider_id")
+  customerRiderId      String?  @map("customer_rider_id")
+  customerBrochureBoxId String? @map("customer_brochure_box_id")
+  customerLockboxId    String?  @map("customer_lockbox_id")
+  customerSignId       String?  @map("customer_sign_id")
+  customValue          String?  @map("custom_value")
 
   createdAt   DateTime @default(now()) @map("created_at")
 
@@ -318,6 +326,7 @@ model Installation {
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   riders          InstallationRider[]
   lockboxes       InstallationLockbox[]
+  serviceRequests ServiceRequest[]
 
   @@map("installations")
 }
@@ -355,6 +364,46 @@ enum InstallationStatus {
   active
   removal_scheduled
   removed
+}
+
+// ============================================
+// Service Requests
+// ============================================
+
+model ServiceRequest {
+  id              String              @id @default(cuid())
+  installationId  String              @map("installation_id")
+  userId          String              @map("user_id")
+  type            ServiceRequestType
+  status          ServiceRequestStatus @default(pending)
+  description     String?
+  requestedDate   DateTime?           @map("requested_date")
+  notes           String?
+  adminNotes      String?             @map("admin_notes")
+  completedAt     DateTime?           @map("completed_at")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  installation    Installation        @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("service_requests")
+}
+
+enum ServiceRequestType {
+  removal
+  service
+  repair
+  replacement
+}
+
+enum ServiceRequestStatus {
+  pending
+  acknowledged
+  scheduled
+  in_progress
+  completed
+  cancelled
 }
 
 // ============================================

@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       revenueToday,
       revenueThisWeek,
       revenueThisMonth,
+      pendingServiceRequests,
     ] = await Promise.all([
       prisma.user.count({
         where: { role: 'customer' },
@@ -73,6 +74,9 @@ export async function GET(request: NextRequest) {
         },
         select: { total: true },
       }),
+      prisma.serviceRequest.count({
+        where: { status: { in: ['pending', 'acknowledged'] } },
+      }),
     ])
 
     const calculateRevenue = (orders: { total: any }[]) =>
@@ -92,6 +96,7 @@ export async function GET(request: NextRequest) {
         thisWeek: calculateRevenue(revenueThisWeek),
         thisMonth: calculateRevenue(revenueThisMonth),
       },
+      pendingServiceRequests,
     })
   } catch (error) {
     console.error('Error fetching stats:', error)

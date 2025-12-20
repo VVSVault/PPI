@@ -37,9 +37,10 @@ const PostShowcase = () => {
           className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-            We install <span className="text-white bg-gray-800 px-2">White</span>,{' '}
-            <span className="text-white bg-gray-900 px-2">Black</span>, and{' '}
-            <span className="text-white bg-pink-500 px-2">Pink</span>!
+            We install{' '}
+            <span className="text-white" style={{ WebkitTextStroke: '1.5px #1f2937' }}>White</span>,{' '}
+            <span className="text-gray-900">Black</span>, and{' '}
+            <span className="text-pink-500">Pink</span>!
           </h2>
           <p className="mt-4 text-lg text-gray-600">
             Choose the perfect post color for your listing

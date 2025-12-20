@@ -37,7 +37,12 @@ export function ReviewStep({
   }
 
   // Sign
-  if (formData.sign_option === 'stored' || formData.sign_option === 'at_property') {
+  if (formData.sign_option === 'stored') {
+    orderItems.push({
+      description: 'Sign Install (from storage)',
+      price: PRICING.sign_install,
+    })
+  } else if (formData.sign_option === 'at_property') {
     orderItems.push({
       description: 'Sign Install',
       price: PRICING.sign_install,
@@ -47,10 +52,12 @@ export function ReviewStep({
   // Riders
   formData.riders.forEach((rider) => {
     const price = rider.is_rental ? PRICING.rider_rental : PRICING.rider_install
-    const suffix = rider.is_rental ? ' (rental)' : ' (your own)'
-    const name = rider.custom_value ? `${rider.custom_value} Acres` : rider.rider_type
+    const name = rider.custom_value ? `${rider.custom_value} Acres` : rider.rider_type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    const description = rider.is_rental
+      ? `Rider Rental: ${name}`
+      : `Rider Install: ${name} (from storage)`
     orderItems.push({
-      description: `Rider: ${name}${suffix}`,
+      description,
       price,
     })
   })
@@ -71,12 +78,12 @@ export function ReviewStep({
   // Brochure box
   if (formData.brochure_option === 'stored') {
     orderItems.push({
-      description: 'Brochure Box Install',
+      description: 'Brochure Box Install (from storage)',
       price: PRICING.brochure_box_install,
     })
   } else if (formData.brochure_option === 'new') {
     orderItems.push({
-      description: 'New Brochure Box',
+      description: 'Brochure Box (New)',
       price: PRICING.brochure_box_new,
     })
   }
@@ -97,13 +104,130 @@ export function ReviewStep({
     setError(null)
 
     try {
-      const items = orderItems.map((item) => ({
-        item_type: 'post', // Simplified for now
-        description: item.description,
-        quantity: 1,
-        unit_price: item.price,
-        total_price: item.price,
-      }))
+      // Build properly typed order items
+      const items: Array<{
+        item_type: string
+        item_category?: string
+        description: string
+        quantity: number
+        unit_price: number
+        total_price: number
+        customer_rider_id?: string
+        customer_brochure_box_id?: string
+        customer_lockbox_id?: string
+        customer_sign_id?: string
+        custom_value?: string
+      }> = []
+
+      // Post
+      if (formData.post_type) {
+        items.push({
+          item_type: 'post',
+          item_category: 'new',
+          description: `${postNames[formData.post_type]} (install & pickup)`,
+          quantity: 1,
+          unit_price: PRICING.posts[formData.post_type],
+          total_price: PRICING.posts[formData.post_type],
+        })
+      }
+
+      // Sign
+      if (formData.sign_option === 'stored') {
+        items.push({
+          item_type: 'sign',
+          item_category: 'storage',
+          description: 'Sign Install (from storage)',
+          quantity: 1,
+          unit_price: PRICING.sign_install,
+          total_price: PRICING.sign_install,
+          customer_sign_id: formData.stored_sign_id,
+        })
+      } else if (formData.sign_option === 'at_property') {
+        items.push({
+          item_type: 'sign',
+          item_category: 'owned',
+          description: 'Sign Install',
+          quantity: 1,
+          unit_price: PRICING.sign_install,
+          total_price: PRICING.sign_install,
+        })
+      }
+
+      // Riders
+      formData.riders.forEach((rider) => {
+        const price = rider.is_rental ? PRICING.rider_rental : PRICING.rider_install
+        const name = rider.custom_value
+          ? `${rider.custom_value} Acres`
+          : rider.rider_type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+        const description = rider.is_rental
+          ? `Rider Rental: ${name}`
+          : `Rider Install: ${name} (from storage)`
+
+        items.push({
+          item_type: 'rider',
+          item_category: rider.is_rental ? 'rental' : 'storage',
+          description,
+          quantity: 1,
+          unit_price: price,
+          total_price: price,
+          customer_rider_id: rider.customer_rider_id,
+          custom_value: rider.custom_value,
+        })
+      })
+
+      // Lockbox
+      if (formData.lockbox_option === 'sentrilock') {
+        items.push({
+          item_type: 'lockbox',
+          item_category: 'owned',
+          description: 'SentriLock Install',
+          quantity: 1,
+          unit_price: PRICING.lockbox_install,
+          total_price: PRICING.lockbox_install,
+          customer_lockbox_id: formData.customer_lockbox_id,
+        })
+      } else if (formData.lockbox_option === 'mechanical_own') {
+        items.push({
+          item_type: 'lockbox',
+          item_category: 'owned',
+          description: 'Mechanical Lockbox Install',
+          quantity: 1,
+          unit_price: PRICING.lockbox_install,
+          total_price: PRICING.lockbox_install,
+          customer_lockbox_id: formData.customer_lockbox_id,
+        })
+      } else if (formData.lockbox_option === 'mechanical_rent') {
+        items.push({
+          item_type: 'lockbox',
+          item_category: 'rental',
+          description: 'Mechanical Lockbox Rental',
+          quantity: 1,
+          unit_price: PRICING.lockbox_rental,
+          total_price: PRICING.lockbox_rental,
+        })
+      }
+
+      // Brochure box
+      if (formData.brochure_option === 'stored') {
+        items.push({
+          item_type: 'brochure_box',
+          item_category: 'storage',
+          description: 'Brochure Box Install (from storage)',
+          quantity: 1,
+          unit_price: PRICING.brochure_box_install,
+          total_price: PRICING.brochure_box_install,
+          customer_brochure_box_id: formData.customer_brochure_box_id,
+        })
+      } else if (formData.brochure_option === 'new') {
+        items.push({
+          item_type: 'brochure_box',
+          item_category: 'new',
+          description: 'Brochure Box (New)',
+          quantity: 1,
+          unit_price: PRICING.brochure_box_new,
+          total_price: PRICING.brochure_box_new,
+        })
+      }
 
       const response = await fetch('/api/orders', {
         method: 'POST',
@@ -115,6 +239,7 @@ export function ReviewStep({
           property_state: formData.property_state,
           property_zip: formData.property_zip,
           installation_location: formData.installation_location,
+          installation_location_image: formData.installation_location_image,
           installation_notes: formData.installation_notes,
           post_type: formData.post_type,
           items,
@@ -254,13 +379,23 @@ export function ReviewStep({
         </label>
       </div>
 
-      {/* Fuel Surcharge Notice */}
-      <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
-        <Lock className="w-4 h-4 flex-shrink-0 mt-0.5 text-gray-400" />
-        <p>
-          A fuel surcharge of ${PRICING.fuel_surcharge.toFixed(2)} is applied to all orders.
-          Your payment information is securely processed via Stripe.
-        </p>
+      {/* Disclosure & Terms */}
+      <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600 space-y-3">
+        <div className="flex items-start gap-3">
+          <Lock className="w-4 h-4 flex-shrink-0 mt-0.5 text-gray-400" />
+          <p>
+            A fuel surcharge of ${PRICING.fuel_surcharge.toFixed(2)} is applied to all orders.
+            Your payment information is securely processed via Stripe.
+          </p>
+        </div>
+        <div className="border-t border-gray-200 pt-3">
+          <p className="font-medium text-gray-700 mb-2">Important Disclosures:</p>
+          <ul className="list-disc list-inside space-y-1 text-gray-600">
+            <li>Rental items (posts, riders, lockboxes) remain property of Pink Post Installations</li>
+            <li>Lost, damaged, or unreturned rental items are subject to replacement fees</li>
+            <li>Replacement fees will be charged to your payment method on file</li>
+          </ul>
+        </div>
       </div>
 
       {/* Error */}

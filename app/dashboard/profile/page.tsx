@@ -1,24 +1,98 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Header } from '@/components/dashboard'
 import { Card, CardContent, Button, Input } from '@/components/ui'
-import { User, Mail, Phone, Building, MapPin, CreditCard } from 'lucide-react'
+import { User, Mail, Phone, Building, Loader2 } from 'lucide-react'
+
+interface Profile {
+  id: string
+  email: string
+  fullName: string | null
+  phone: string | null
+  company: string | null
+}
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [formData, setFormData] = useState({
-    fullName: 'Jane Smith',
-    email: 'jane.smith@abcrealty.com',
-    phone: '(859) 555-0123',
-    companyName: 'ABC Realty',
-    licenseNumber: 'KY-12345',
-    billingAddress: '123 Main Street, Lexington, KY 40507',
+    fullName: '',
+    email: '',
+    phone: '',
+    company: '',
   })
 
-  const handleSave = () => {
-    // Save profile data to Supabase
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const res = await fetch('/api/profile')
+        if (res.ok) {
+          const data = await res.json()
+          setProfile(data.profile)
+          setFormData({
+            fullName: data.profile.fullName || '',
+            email: data.profile.email || '',
+            phone: data.profile.phone || '',
+            company: data.profile.company || '',
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProfile()
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          phone: formData.phone,
+          company: formData.company,
+        }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setProfile(data.profile)
+        setIsEditing(false)
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setFormData({
+      fullName: profile?.fullName || '',
+      email: profile?.email || '',
+      phone: profile?.phone || '',
+      company: profile?.company || '',
+    })
     setIsEditing(false)
+  }
+
+  if (loading) {
+    return (
+      <div>
+        <Header title="Profile" />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-pink-500" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -56,10 +130,8 @@ export default function ProfilePage() {
                 type="email"
                 icon={<Mail className="w-5 h-5" />}
                 value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                disabled={!isEditing}
+                disabled
+                helperText="Email cannot be changed"
               />
 
               <Input
@@ -71,116 +143,38 @@ export default function ProfilePage() {
                   setFormData({ ...formData, phone: e.target.value })
                 }
                 disabled={!isEditing}
+                placeholder="(555) 555-5555"
               />
 
               <Input
                 label="Company / Brokerage"
                 icon={<Building className="w-5 h-5" />}
-                value={formData.companyName}
+                value={formData.company}
                 onChange={(e) =>
-                  setFormData({ ...formData, companyName: e.target.value })
+                  setFormData({ ...formData, company: e.target.value })
                 }
                 disabled={!isEditing}
-              />
-
-              <Input
-                label="License Number"
-                icon={<CreditCard className="w-5 h-5" />}
-                value={formData.licenseNumber}
-                onChange={(e) =>
-                  setFormData({ ...formData, licenseNumber: e.target.value })
-                }
-                disabled={!isEditing}
-              />
-
-              <Input
-                label="Billing Address"
-                icon={<MapPin className="w-5 h-5" />}
-                value={formData.billingAddress}
-                onChange={(e) =>
-                  setFormData({ ...formData, billingAddress: e.target.value })
-                }
-                disabled={!isEditing}
+                placeholder="Your brokerage name"
               />
             </div>
 
             {isEditing && (
               <div className="flex gap-4 mt-6">
-                <Button onClick={handleSave}>Save Changes</Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsEditing(false)}
-                >
+                <Button onClick={handleSave} disabled={saving}>
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </Button>
+                <Button variant="outline" onClick={handleCancel} disabled={saving}>
                   Cancel
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Password Change */}
-        <Card variant="bordered" className="mt-6">
-          <CardContent className="p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">
-              Change Password
-            </h2>
-            <div className="space-y-4 max-w-md">
-              <Input
-                label="Current Password"
-                type="password"
-                placeholder="Enter current password"
-              />
-              <Input
-                label="New Password"
-                type="password"
-                placeholder="Enter new password"
-              />
-              <Input
-                label="Confirm New Password"
-                type="password"
-                placeholder="Confirm new password"
-              />
-              <Button>Update Password</Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Payment Methods */}
-        <Card variant="bordered" className="mt-6">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Payment Methods
-              </h2>
-              <Button variant="outline" size="sm">
-                Add Card
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              {/* Saved Card */}
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-8 bg-blue-600 rounded flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">AMEX</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      American Express ****1005
-                    </p>
-                    <p className="text-sm text-gray-500">Expires 12/26</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
-                    Default
-                  </span>
-                  <button className="text-sm text-gray-500 hover:text-gray-700">
-                    Remove
-                  </button>
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
@@ -194,7 +188,7 @@ export default function ProfilePage() {
             <div className="space-y-4">
               {[
                 {
-                  label: 'Email notifications for new invoices',
+                  label: 'Email notifications for new orders',
                   checked: true,
                 },
                 {
@@ -202,7 +196,7 @@ export default function ProfilePage() {
                   checked: true,
                 },
                 {
-                  label: 'Email notifications for payment reminders',
+                  label: 'Email notifications for order confirmations',
                   checked: true,
                 },
                 {
@@ -222,10 +216,6 @@ export default function ProfilePage() {
                   <span className="text-gray-700">{pref.label}</span>
                 </label>
               ))}
-
-              <Button variant="outline" className="mt-4">
-                Save Preferences
-              </Button>
             </div>
           </CardContent>
         </Card>

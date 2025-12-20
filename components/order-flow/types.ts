@@ -16,6 +16,7 @@ export interface OrderFormData {
   property_state: string
   property_zip: string
   installation_location: string
+  installation_location_image?: string // base64 encoded image
   installation_notes: string
 
   // Post Selection

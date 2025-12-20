@@ -1,5 +1,6 @@
 export * from './hero'
 export * from './post-showcase'
+export * from './rider-callout'
 export * from './value-proposition'
 export * from './post-preview'
 export * from './trip-callout'

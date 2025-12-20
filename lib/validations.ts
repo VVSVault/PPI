@@ -14,12 +14,13 @@ export const propertySchema = z.object({
   property_state: z.string().default('KY'),
   property_zip: z.string().min(5, 'ZIP code is required'),
   installation_location: z.string().optional(),
+  installation_location_image: z.string().optional(), // base64 encoded image
   installation_notes: z.string().optional(),
 })
 
 export const orderItemSchema = z.object({
   item_type: z.enum(['post', 'sign', 'rider', 'lockbox', 'brochure_box', 'trip']),
-  item_category: z.enum(['rental', 'owned', 'new']).optional(),
+  item_category: z.enum(['rental', 'owned', 'new', 'storage']).optional(),
   description: z.string(),
   quantity: z.number().min(1).default(1),
   unit_price: z.number().min(0),

@@ -1,0 +1,51 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/auth-utils'
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const user = await getCurrentUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const installation = await prisma.installation.findFirst({
+      where: { id, userId: user.id },
+      include: {
+        order: {
+          include: {
+            postType: true,
+            orderItems: true,
+          },
+        },
+        riders: {
+          include: {
+            rider: true,
+          },
+        },
+        lockboxes: {
+          include: {
+            lockboxType: true,
+          },
+        },
+        serviceRequests: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    })
+
+    if (!installation) {
+      return NextResponse.json({ error: 'Installation not found' }, { status: 404 })
+    }
+
+    return NextResponse.json({ installation })
+  } catch (error) {
+    console.error('Error fetching installation:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

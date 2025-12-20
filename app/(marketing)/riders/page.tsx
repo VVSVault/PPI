@@ -18,7 +18,6 @@ const riders = [
 const terms = [
   'Riders remain property of Pink Post Installations',
   'Riders must be returned upon sign removal',
-  'Lost/damaged riders will incur replacement fee',
   'Custom riders available upon request (additional fees apply)',
   'Riders are installed at same time as post or within 24 hours',
 ]
@@ -79,15 +78,16 @@ export default function RidersPage() {
 
         {/* Terms Section */}
         <motion.div
+          id="terms"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-16"
+          className="mt-16 scroll-mt-8"
         >
           <Card variant="bordered">
             <CardContent className="p-8">
               <h2 className="text-xl font-bold text-gray-900 mb-4">
-                Terms & Conditions
+                Rental Terms & Conditions
               </h2>
               <ul className="space-y-3">
                 {terms.map((term, index) => (

@@ -45,7 +45,7 @@ const mockOrderItems: OrderItem[] = [
     id: '5',
     date: '2025-11-15',
     itemType: 'lockbox',
-    description: 'LOCKBOX: Supra eKey',
+    description: 'LOCKBOX: SentriLock',
     address: '456 Man O War Blvd, Lexington, KY 40509',
     amount: 25,
     belongsTo: 'You',
