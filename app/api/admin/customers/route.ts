@@ -1,26 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-
-async function isAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', userId)
-    .single()
-
-  return profile?.role === 'admin'
-}
+import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/auth-utils'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!(await isAdmin(supabase, user.id))) {
+    if (user.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -29,73 +19,46 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    let query = supabase
-      .from('profiles')
-      .select('*')
-      .eq('role', 'customer')
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
-
-    if (search) {
-      query = query.or(
-        `full_name.ilike.%${search}%,email.ilike.%${search}%,company_name.ilike.%${search}%`
-      )
-    }
-
-    const { data: customers, error } = await query
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    // Get counts for each customer
-    const customerIds = customers.map((c) => c.id)
-
-    const [signs, riders, lockboxes, orders] = await Promise.all([
-      supabase
-        .from('customer_signs')
-        .select('user_id, quantity')
-        .in('user_id', customerIds),
-      supabase
-        .from('customer_riders')
-        .select('user_id, quantity')
-        .in('user_id', customerIds),
-      supabase
-        .from('customer_lockboxes')
-        .select('user_id, quantity')
-        .in('user_id', customerIds),
-      supabase
-        .from('orders')
-        .select('user_id')
-        .in('user_id', customerIds),
-    ])
-
-    // Calculate totals per customer
-    const customersWithCounts = customers.map((customer) => {
-      const signCount = (signs.data || [])
-        .filter((s) => s.user_id === customer.id)
-        .reduce((sum, s) => sum + s.quantity, 0)
-
-      const riderCount = (riders.data || [])
-        .filter((r) => r.user_id === customer.id)
-        .reduce((sum, r) => sum + r.quantity, 0)
-
-      const lockboxCount = (lockboxes.data || [])
-        .filter((l) => l.user_id === customer.id)
-        .reduce((sum, l) => sum + l.quantity, 0)
-
-      const orderCount = (orders.data || []).filter(
-        (o) => o.user_id === customer.id
-      ).length
-
-      return {
-        ...customer,
-        sign_count: signCount,
-        rider_count: riderCount,
-        lockbox_count: lockboxCount,
-        order_count: orderCount,
-      }
+    const customers = await prisma.user.findMany({
+      where: {
+        role: 'customer',
+        ...(search
+          ? {
+              OR: [
+                { fullName: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+                { company: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      },
+      include: {
+        _count: {
+          select: {
+            customerSigns: true,
+            customerRiders: true,
+            customerLockboxes: true,
+            orders: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip: offset,
     })
+
+    const customersWithCounts = customers.map((customer) => ({
+      id: customer.id,
+      email: customer.email,
+      full_name: customer.fullName,
+      phone: customer.phone,
+      company: customer.company,
+      created_at: customer.createdAt,
+      sign_count: customer._count.customerSigns,
+      rider_count: customer._count.customerRiders,
+      lockbox_count: customer._count.customerLockboxes,
+      order_count: customer._count.orders,
+    }))
 
     return NextResponse.json({ customers: customersWithCounts })
   } catch (error) {

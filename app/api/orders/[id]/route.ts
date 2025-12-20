@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/auth-utils'
 
 export async function GET(
   request: NextRequest,
@@ -7,35 +8,23 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: order, error } = await supabase
-      .from('orders')
-      .select('*, order_items(*)')
-      .eq('id', id)
-      .single()
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: { orderItems: true },
+    })
 
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
     // Check if user owns this order or is admin
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (order.user_id !== user.id && profile?.role !== 'admin') {
+    if (order.userId !== user.id && user.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -52,44 +41,29 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Check if user is admin
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (profile?.role !== 'admin') {
+    if (user.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const body = await request.json()
-    const allowedFields = ['status', 'scheduled_date', 'completed_date', 'payment_status']
+    const allowedFields = ['status', 'scheduledDate', 'paymentStatus']
     const updateData: Record<string, unknown> = {}
 
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field]
-      }
-    }
+    if (body.status !== undefined) updateData.status = body.status
+    if (body.scheduled_date !== undefined) updateData.scheduledDate = new Date(body.scheduled_date)
+    if (body.payment_status !== undefined) updateData.paymentStatus = body.payment_status
 
-    const { data: order, error } = await supabase
-      .from('orders')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single()
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
+    const order = await prisma.order.update({
+      where: { id },
+      data: updateData,
+    })
 
     return NextResponse.json({ order })
   } catch (error) {
@@ -104,35 +78,24 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get the order
-    const { data: order, error: fetchError } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('id', id)
-      .single()
+    const order = await prisma.order.findUnique({
+      where: { id },
+    })
 
-    if (fetchError || !order) {
+    if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
     // Check ownership
-    if (order.user_id !== user.id) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-      if (profile?.role !== 'admin') {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-      }
+    if (order.userId !== user.id && user.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // Only allow cancellation of pending/confirmed orders
@@ -143,14 +106,10 @@ export async function DELETE(
       )
     }
 
-    const { error: updateError } = await supabase
-      .from('orders')
-      .update({ status: 'cancelled' })
-      .eq('id', id)
-
-    if (updateError) {
-      return NextResponse.json({ error: updateError.message }, { status: 500 })
-    }
+    await prisma.order.update({
+      where: { id },
+      data: { status: 'cancelled' },
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {

@@ -1,32 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/auth-utils'
 import {
   createCustomer,
   attachPaymentMethod,
-  listPaymentMethods,
   setDefaultPaymentMethod,
-  createSetupIntent,
 } from '@/lib/stripe/server'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: paymentMethods, error } = await supabase
-      .from('payment_methods')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('is_default', { ascending: false })
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
+    const paymentMethods = await prisma.paymentMethod.findMany({
+      where: { userId: user.id },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+    })
 
     return NextResponse.json({ paymentMethods })
   } catch (error) {
@@ -37,10 +29,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -54,77 +45,51 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get user profile
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
-    if (profileError || !profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-    }
-
     // Create Stripe customer if doesn't exist
-    let stripeCustomerId = profile.stripe_customer_id
+    let stripeCustomerId = user.stripeCustomerId
     if (!stripeCustomerId) {
-      const stripeCustomer = await createCustomer(profile.email, profile.full_name)
+      const stripeCustomer = await createCustomer(user.email, user.fullName || user.name || '')
       stripeCustomerId = stripeCustomer.id
 
-      await supabase
-        .from('profiles')
-        .update({ stripe_customer_id: stripeCustomerId })
-        .eq('id', user.id)
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { stripeCustomerId },
+      })
     }
 
     // Attach payment method to customer
     const paymentMethod = await attachPaymentMethod(payment_method_id, stripeCustomerId)
 
-    // If setting as default or first card, update Stripe customer
-    const { count } = await supabase
-      .from('payment_methods')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
+    // Check if first card
+    const existingCount = await prisma.paymentMethod.count({
+      where: { userId: user.id },
+    })
 
-    const isFirstCard = count === 0
+    const isFirstCard = existingCount === 0
     const shouldSetDefault = set_as_default || isFirstCard
 
     if (shouldSetDefault) {
       await setDefaultPaymentMethod(stripeCustomerId, payment_method_id)
 
       // Clear other defaults
-      await supabase
-        .from('payment_methods')
-        .update({ is_default: false })
-        .eq('user_id', user.id)
+      await prisma.paymentMethod.updateMany({
+        where: { userId: user.id },
+        data: { isDefault: false },
+      })
     }
 
     // Save to database
-    const { data: savedMethod, error: saveError } = await supabase
-      .from('payment_methods')
-      .insert({
-        user_id: user.id,
-        stripe_payment_method_id: payment_method_id,
-        card_brand: paymentMethod.card?.brand,
-        card_last4: paymentMethod.card?.last4,
-        card_exp_month: paymentMethod.card?.exp_month,
-        card_exp_year: paymentMethod.card?.exp_year,
-        is_default: shouldSetDefault,
-      })
-      .select()
-      .single()
-
-    if (saveError) {
-      return NextResponse.json({ error: saveError.message }, { status: 500 })
-    }
-
-    // Update profile with default payment method
-    if (shouldSetDefault) {
-      await supabase
-        .from('profiles')
-        .update({ default_payment_method_id: savedMethod.id })
-        .eq('id', user.id)
-    }
+    const savedMethod = await prisma.paymentMethod.create({
+      data: {
+        userId: user.id,
+        stripePaymentMethodId: payment_method_id,
+        brand: paymentMethod.card?.brand || 'unknown',
+        last4: paymentMethod.card?.last4 || '0000',
+        expMonth: paymentMethod.card?.exp_month || 0,
+        expYear: paymentMethod.card?.exp_year || 0,
+        isDefault: shouldSetDefault,
+      },
+    })
 
     return NextResponse.json({ paymentMethod: savedMethod }, { status: 201 })
   } catch (error) {

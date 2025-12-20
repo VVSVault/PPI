@@ -1,15 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-
-async function isAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', userId)
-    .single()
-
-  return profile?.role === 'admin'
-}
+import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/auth-utils'
 
 export async function GET(
   request: NextRequest,
@@ -17,73 +8,75 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!(await isAdmin(supabase, user.id))) {
+    if (user.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // Get customer profile
-    const { data: customer, error: customerError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', id)
-      .single()
+    const customer = await prisma.user.findUnique({
+      where: { id },
+    })
 
-    if (customerError || !customer) {
+    if (!customer) {
       return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
     }
 
     // Get all inventory and related data
     const [signs, riders, lockboxes, brochureBoxes, orders, installations] =
       await Promise.all([
-        supabase
-          .from('customer_signs')
-          .select('*')
-          .eq('user_id', id)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('customer_riders')
-          .select('*')
-          .eq('user_id', id)
-          .order('rider_type'),
-        supabase
-          .from('customer_lockboxes')
-          .select('*')
-          .eq('user_id', id)
-          .order('lockbox_type'),
-        supabase
-          .from('customer_brochure_boxes')
-          .select('*')
-          .eq('user_id', id)
-          .single(),
-        supabase
-          .from('orders')
-          .select('*, order_items(*)')
-          .eq('user_id', id)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('installations')
-          .select('*, installation_riders(*), installation_lockboxes(*)')
-          .eq('user_id', id)
-          .order('installation_date', { ascending: false }),
+        prisma.customerSign.findMany({
+          where: { userId: id },
+          orderBy: { createdAt: 'desc' },
+        }),
+        prisma.customerRider.findMany({
+          where: { userId: id },
+          include: { rider: true },
+        }),
+        prisma.customerLockbox.findMany({
+          where: { userId: id },
+          include: { lockboxType: true },
+        }),
+        prisma.customerBrochureBox.findMany({
+          where: { userId: id },
+        }),
+        prisma.order.findMany({
+          where: { userId: id },
+          include: { orderItems: true },
+          orderBy: { createdAt: 'desc' },
+        }),
+        prisma.installation.findMany({
+          where: { userId: id },
+          include: {
+            riders: { include: { rider: true } },
+            lockboxes: { include: { lockboxType: true } },
+          },
+          orderBy: { installedAt: 'desc' },
+        }),
       ])
 
     return NextResponse.json({
-      customer,
-      inventory: {
-        signs: signs.data || [],
-        riders: riders.data || [],
-        lockboxes: lockboxes.data || [],
-        brochureBoxes: brochureBoxes.data || null,
+      customer: {
+        id: customer.id,
+        email: customer.email,
+        full_name: customer.fullName,
+        phone: customer.phone,
+        company: customer.company,
+        created_at: customer.createdAt,
       },
-      orders: orders.data || [],
-      installations: installations.data || [],
+      inventory: {
+        signs,
+        riders,
+        lockboxes,
+        brochureBoxes,
+      },
+      orders,
+      installations,
     })
   } catch (error) {
     console.error('Error fetching customer:', error)
@@ -97,39 +90,37 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!(await isAdmin(supabase, user.id))) {
+    if (user.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const body = await request.json()
-    const allowedFields = ['full_name', 'phone', 'company_name', 'license_number']
     const updateData: Record<string, unknown> = {}
 
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field]
-      }
-    }
+    if (body.full_name !== undefined) updateData.fullName = body.full_name
+    if (body.phone !== undefined) updateData.phone = body.phone
+    if (body.company !== undefined) updateData.company = body.company
 
-    const { data: customer, error } = await supabase
-      .from('profiles')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single()
+    const customer = await prisma.user.update({
+      where: { id },
+      data: updateData,
+    })
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ customer })
+    return NextResponse.json({
+      customer: {
+        id: customer.id,
+        email: customer.email,
+        full_name: customer.fullName,
+        phone: customer.phone,
+        company: customer.company,
+      },
+    })
   } catch (error) {
     console.error('Error updating customer:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

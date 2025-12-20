@@ -1,37 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/auth-utils'
 import { createCustomer, createSetupIntent } from '@/lib/stripe/server'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
-    if (profileError || !profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-    }
-
     // Create Stripe customer if doesn't exist
-    let stripeCustomerId = profile.stripe_customer_id
+    let stripeCustomerId = user.stripeCustomerId
     if (!stripeCustomerId) {
-      const stripeCustomer = await createCustomer(profile.email, profile.full_name)
+      const stripeCustomer = await createCustomer(user.email, user.fullName || user.name || '')
       stripeCustomerId = stripeCustomer.id
 
-      await supabase
-        .from('profiles')
-        .update({ stripe_customer_id: stripeCustomerId })
-        .eq('id', user.id)
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { stripeCustomerId },
+      })
     }
 
     // Create setup intent

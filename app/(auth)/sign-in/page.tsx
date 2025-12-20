@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { Card, CardContent, Button, Input } from '@/components/ui'
 
@@ -10,6 +11,7 @@ export default function SignInPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -18,12 +20,27 @@ export default function SignInPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError('')
 
-    // Simulate authentication - replace with actual Supabase auth
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      const result = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError('Invalid email or password')
+        setIsLoading(false)
+        return
+      }
+
       router.push('/dashboard')
-    }, 1000)
+      router.refresh()
+    } catch (err) {
+      setError('An error occurred. Please try again.')
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -35,6 +52,12 @@ export default function SignInPage() {
             Sign in to manage your installations
           </p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <Input

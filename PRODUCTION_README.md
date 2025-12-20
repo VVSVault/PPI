@@ -16,7 +16,8 @@ Pink Post Installations is a premium yard sign installation service platform for
 | Animations | Framer Motion |
 | Icons | Lucide React |
 | Forms | React Hook Form + Zod |
-| Backend | Supabase (PostgreSQL, Auth, Storage) |
+| Database | Railway PostgreSQL + Prisma ORM |
+| Authentication | NextAuth.js (Credentials Provider) |
 | Payments | Stripe (Elements, Payment Intents) |
 | Email | Resend |
 | Hosting | Vercel (recommended) |
@@ -72,17 +73,22 @@ pink-post-installations/
 │   └── shared/               # Shared components
 │
 ├── lib/
-│   ├── supabase/             # Supabase client config
+│   ├── prisma.ts             # Prisma client config
+│   ├── auth.ts               # NextAuth configuration
+│   ├── auth-utils.ts         # Auth helper functions
 │   ├── stripe/               # Stripe client/server
 │   ├── email.ts              # Email templates
 │   ├── validations.ts        # Zod schemas
 │   └── utils.ts              # Utilities
 │
-├── types/
-│   └── database.ts           # TypeScript types
+├── prisma/
+│   ├── schema.prisma         # Database schema
+│   ├── seed.ts               # Seed data script
+│   └── migrations/           # Database migrations
 │
-├── supabase/
-│   └── schema.sql            # Database schema + seed data
+├── types/
+│   ├── database.ts           # TypeScript types
+│   └── next-auth.d.ts        # NextAuth type extensions
 │
 └── public/
     └── images/posts/         # Post images
@@ -277,10 +283,12 @@ The order wizard guides customers through 9 steps:
 Create a `.env.local` file with these variables:
 
 ```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+# Database (Railway PostgreSQL)
+DATABASE_URL=postgresql://user:password@host:port/database
+
+# NextAuth
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key-here
 
 # Stripe
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
@@ -295,7 +303,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_APP_URL=https://pinkpostinstallations.com
 
 # Admin notifications
-ADMIN_EMAIL=admin@pinkpostinstallations.com
+ADMIN_EMAIL=contact@pinkposts.com
 ```
 
 ---
@@ -310,33 +318,42 @@ cd PPI
 npm install
 ```
 
-### 2. Set Up Supabase
+### 2. Set Up Railway PostgreSQL
 
-1. Create a new Supabase project
-2. Go to SQL Editor
-3. Run the contents of `supabase/schema.sql`
-4. Copy your project URL and keys to `.env.local`
+1. Create a Railway account and new project
+2. Add a PostgreSQL database
+3. Copy the connection URL to your `.env.local` as `DATABASE_URL`
 
-### 3. Set Up Stripe
+### 3. Set Up Database
+
+```bash
+# Run migrations
+npx prisma migrate dev
+
+# Seed initial data
+npm run db:seed
+```
+
+### 4. Set Up Stripe
 
 1. Create a Stripe account
 2. Get your API keys from the Stripe Dashboard
 3. Set up a webhook endpoint pointing to `/api/webhooks/stripe`
 4. Add keys to `.env.local`
 
-### 4. Set Up Resend
+### 5. Set Up Resend
 
 1. Create a Resend account
 2. Get your API key
 3. Add to `.env.local`
 
-### 5. Run Development Server
+### 6. Run Development Server
 
 ```bash
 npm run dev
 ```
 
-### 6. Deploy to Vercel
+### 7. Deploy to Vercel
 
 1. Push to GitHub
 2. Import to Vercel
@@ -349,15 +366,16 @@ npm run dev
 
 To grant admin access:
 
-1. Go to Supabase Dashboard
-2. Open the SQL Editor
-3. Run:
+1. Use Prisma Studio: `npm run db:studio`
+2. Or run directly via SQL:
 
 ```sql
-UPDATE profiles
+UPDATE users
 SET role = 'admin'
 WHERE email = 'user@example.com';
 ```
+
+**Note:** The seed script creates an admin user: `admin@pinkposts.com` with password `admin123`
 
 ---
 
@@ -374,9 +392,9 @@ WHERE email = 'user@example.com';
 
 ## Security
 
-- **Authentication:** Supabase Auth with JWT
-- **Authorization:** Row Level Security (RLS) on all tables
-- **Admin Check:** Middleware verifies admin role
+- **Authentication:** NextAuth.js with JWT sessions
+- **Password Hashing:** bcrypt with 12 rounds
+- **Admin Check:** API routes verify admin role
 - **Payments:** Stripe handles all card data (PCI compliant)
 - **Input Validation:** Zod schemas on all forms
 - **HTTPS:** Enforced via Vercel
@@ -400,6 +418,9 @@ WHERE email = 'user@example.com';
 
 | File | Description |
 |------|-------------|
+| `lib/prisma.ts` | Prisma client with pg adapter |
+| `lib/auth.ts` | NextAuth configuration |
+| `lib/auth-utils.ts` | Auth helper functions |
 | `lib/stripe/server.ts` | Stripe server-side utilities |
 | `lib/stripe/client.ts` | Stripe client-side loader |
 | `lib/email.ts` | Email templates and sending |
@@ -409,6 +430,16 @@ WHERE email = 'user@example.com';
 
 ## Changelog
 
+### v2.1.0 (Railway Migration)
+
+- Migrated from Supabase to Railway PostgreSQL
+- Replaced Supabase Auth with NextAuth.js
+- Added Prisma ORM for database access
+- Added pg adapter for Prisma 7 compatibility
+- Created database seed script
+- Updated all API routes to use Prisma
+- Added bcrypt password hashing
+
 ### v2.0.0 (Production Build)
 
 - Added multi-step order wizard (9 steps)
@@ -417,7 +448,7 @@ WHERE email = 'user@example.com';
 - Added email notifications via Resend
 - Added billing history page
 - Updated landing page with production messaging
-- Complete database schema with RLS policies
+- Complete database schema
 - Full TypeScript types for all tables
 
 ### v1.0.0 (Initial Build)

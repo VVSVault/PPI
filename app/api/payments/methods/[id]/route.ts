@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/auth-utils'
 import { detachPaymentMethod, setDefaultPaymentMethod } from '@/lib/stripe/server'
 
 export async function PUT(
@@ -8,10 +9,9 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -19,56 +19,33 @@ export async function PUT(
     const { is_default } = body
 
     // Get the payment method
-    const { data: paymentMethod, error: fetchError } = await supabase
-      .from('payment_methods')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .single()
+    const paymentMethod = await prisma.paymentMethod.findFirst({
+      where: { id, userId: user.id },
+    })
 
-    if (fetchError || !paymentMethod) {
+    if (!paymentMethod) {
       return NextResponse.json({ error: 'Payment method not found' }, { status: 404 })
     }
 
     if (is_default) {
-      // Get profile for Stripe customer ID
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('stripe_customer_id')
-        .eq('id', user.id)
-        .single()
-
-      if (profile?.stripe_customer_id) {
+      if (user.stripeCustomerId) {
         await setDefaultPaymentMethod(
-          profile.stripe_customer_id,
-          paymentMethod.stripe_payment_method_id
+          user.stripeCustomerId,
+          paymentMethod.stripePaymentMethodId
         )
       }
 
       // Clear other defaults
-      await supabase
-        .from('payment_methods')
-        .update({ is_default: false })
-        .eq('user_id', user.id)
-        .neq('id', id)
+      await prisma.paymentMethod.updateMany({
+        where: { userId: user.id, id: { not: id } },
+        data: { isDefault: false },
+      })
 
       // Set this as default
-      const { data: updated, error: updateError } = await supabase
-        .from('payment_methods')
-        .update({ is_default: true })
-        .eq('id', id)
-        .select()
-        .single()
-
-      if (updateError) {
-        return NextResponse.json({ error: updateError.message }, { status: 500 })
-      }
-
-      // Update profile
-      await supabase
-        .from('profiles')
-        .update({ default_payment_method_id: id })
-        .eq('id', user.id)
+      const updated = await prisma.paymentMethod.update({
+        where: { id },
+        data: { isDefault: true },
+      })
 
       return NextResponse.json({ paymentMethod: updated })
     }
@@ -86,67 +63,45 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get the payment method
-    const { data: paymentMethod, error: fetchError } = await supabase
-      .from('payment_methods')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .single()
+    const paymentMethod = await prisma.paymentMethod.findFirst({
+      where: { id, userId: user.id },
+    })
 
-    if (fetchError || !paymentMethod) {
+    if (!paymentMethod) {
       return NextResponse.json({ error: 'Payment method not found' }, { status: 404 })
     }
 
     // Detach from Stripe
     try {
-      await detachPaymentMethod(paymentMethod.stripe_payment_method_id)
+      await detachPaymentMethod(paymentMethod.stripePaymentMethodId)
     } catch (stripeError) {
       console.error('Error detaching from Stripe:', stripeError)
     }
 
     // Delete from database
-    const { error: deleteError } = await supabase
-      .from('payment_methods')
-      .delete()
-      .eq('id', id)
-
-    if (deleteError) {
-      return NextResponse.json({ error: deleteError.message }, { status: 500 })
-    }
+    await prisma.paymentMethod.delete({
+      where: { id },
+    })
 
     // If was default, set another as default
-    if (paymentMethod.is_default) {
-      const { data: remaining } = await supabase
-        .from('payment_methods')
-        .select('id, stripe_payment_method_id')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
+    if (paymentMethod.isDefault) {
+      const remaining = await prisma.paymentMethod.findFirst({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+      })
 
       if (remaining) {
-        await supabase
-          .from('payment_methods')
-          .update({ is_default: true })
-          .eq('id', remaining.id)
-
-        await supabase
-          .from('profiles')
-          .update({ default_payment_method_id: remaining.id })
-          .eq('id', user.id)
-      } else {
-        await supabase
-          .from('profiles')
-          .update({ default_payment_method_id: null })
-          .eq('id', user.id)
+        await prisma.paymentMethod.update({
+          where: { id: remaining.id },
+          data: { isDefault: true },
+        })
       }
     }
 

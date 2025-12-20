@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/auth-utils'
 
 export async function POST(
   request: NextRequest,
@@ -7,32 +8,28 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
-    const { rider_type, custom_value, is_rental } = body
+    const { rider_id, is_rental } = body
 
-    if (!rider_type) {
+    if (!rider_id) {
       return NextResponse.json(
-        { error: 'Rider type is required' },
+        { error: 'Rider ID is required' },
         { status: 400 }
       )
     }
 
     // Verify installation belongs to user
-    const { data: installation, error: fetchError } = await supabase
-      .from('installations')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .single()
+    const installation = await prisma.installation.findFirst({
+      where: { id, userId: user.id },
+    })
 
-    if (fetchError || !installation) {
+    if (!installation) {
       return NextResponse.json({ error: 'Installation not found' }, { status: 404 })
     }
 
@@ -43,22 +40,16 @@ export async function POST(
       )
     }
 
-    const { data, error } = await supabase
-      .from('installation_riders')
-      .insert({
-        installation_id: id,
-        rider_type,
-        custom_value,
-        is_rental: is_rental || false,
-      })
-      .select()
-      .single()
+    const rider = await prisma.installationRider.create({
+      data: {
+        installationId: id,
+        riderId: rider_id,
+        isRental: is_rental || false,
+      },
+      include: { rider: true },
+    })
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ rider: data }, { status: 201 })
+    return NextResponse.json({ rider }, { status: 201 })
   } catch (error) {
     console.error('Error adding rider:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

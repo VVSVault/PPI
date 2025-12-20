@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { signOut } from 'next-auth/react'
 import {
   LayoutDashboard,
   FileText,
@@ -139,7 +140,10 @@ const Sidebar = () => {
 
       {/* Logout */}
       <div className="p-4 border-t border-pink-500/30">
-        <button className="flex items-center gap-3 px-4 py-2.5 w-full rounded-lg text-sm font-medium text-pink-100 hover:bg-pink-500/50 hover:text-white transition-all">
+        <button
+          onClick={() => signOut({ callbackUrl: '/sign-in' })}
+          className="flex items-center gap-3 px-4 py-2.5 w-full rounded-lg text-sm font-medium text-pink-100 hover:bg-pink-500/50 hover:text-white transition-all"
+        >
           <LogOut className="w-5 h-5" />
           Sign Out
         </button>

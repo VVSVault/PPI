@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/auth-utils'
 
 export async function POST(
   request: NextRequest,
@@ -7,10 +8,9 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -25,14 +25,11 @@ export async function POST(
     }
 
     // Get the installation
-    const { data: installation, error: fetchError } = await supabase
-      .from('installations')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .single()
+    const installation = await prisma.installation.findFirst({
+      where: { id, userId: user.id },
+    })
 
-    if (fetchError || !installation) {
+    if (!installation) {
       return NextResponse.json({ error: 'Installation not found' }, { status: 404 })
     }
 
@@ -43,21 +40,15 @@ export async function POST(
       )
     }
 
-    const { data, error } = await supabase
-      .from('installations')
-      .update({
+    const updated = await prisma.installation.update({
+      where: { id },
+      data: {
         status: 'removal_scheduled',
-        removal_scheduled_date: removal_date,
-      })
-      .eq('id', id)
-      .select()
-      .single()
+        removalDate: new Date(removal_date),
+      },
+    })
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ installation: data })
+    return NextResponse.json({ installation: updated })
   } catch (error) {
     console.error('Error scheduling removal:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/prisma'
+import { getCurrentUser, generateOrderNumber } from '@/lib/auth-utils'
 import { createOrderSchema } from '@/lib/validations'
 import { createPaymentIntent, createCustomer } from '@/lib/stripe/server'
 import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/lib/email'
@@ -8,10 +9,9 @@ const FUEL_SURCHARGE = 2.47
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -20,24 +20,20 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    let query = supabase
-      .from('orders')
-      .select('*, order_items(*)')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
+    const orders = await prisma.order.findMany({
+      where: {
+        userId: user.id,
+        ...(status ? { status: status as any } : {}),
+      },
+      include: {
+        orderItems: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip: offset,
+    })
 
-    if (status) {
-      query = query.eq('status', status)
-    }
-
-    const { data, error } = await query
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ orders: data })
+    return NextResponse.json({ orders })
   } catch (error) {
     console.error('Error fetching orders:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -46,10 +42,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -65,32 +60,21 @@ export async function POST(request: NextRequest) {
 
     const orderData = validationResult.data
 
-    // Get user profile
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
-    if (profileError || !profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-    }
-
     // Calculate totals
     const subtotal = orderData.items.reduce((sum, item) => sum + item.total_price, 0)
-    const expediteFee = orderData.is_expedited ? 25 : 0 // Configurable expedite fee
+    const expediteFee = orderData.is_expedited ? 25 : 0
     const total = subtotal + FUEL_SURCHARGE + expediteFee
 
     // Create or get Stripe customer
-    let stripeCustomerId = profile.stripe_customer_id
+    let stripeCustomerId = user.stripeCustomerId
     if (!stripeCustomerId) {
-      const stripeCustomer = await createCustomer(profile.email, profile.full_name)
+      const stripeCustomer = await createCustomer(user.email, user.fullName || user.name || '')
       stripeCustomerId = stripeCustomer.id
 
-      await supabase
-        .from('profiles')
-        .update({ stripe_customer_id: stripeCustomerId })
-        .eq('id', user.id)
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { stripeCustomerId },
+      })
     }
 
     // Create payment intent
@@ -100,66 +84,70 @@ export async function POST(request: NextRequest) {
       orderData.payment_method_id
     )
 
+    // Get the post type
+    const postType = await prisma.postType.findFirst({
+      where: { name: orderData.post_type },
+    })
+
+    if (!postType) {
+      return NextResponse.json({ error: 'Invalid post type' }, { status: 400 })
+    }
+
     // Create order
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .insert({
-        user_id: user.id,
-        property_type: orderData.property_type,
-        property_address: orderData.property_address,
-        property_city: orderData.property_city,
-        property_state: orderData.property_state || 'KY',
-        property_zip: orderData.property_zip,
-        installation_location: orderData.installation_location,
-        installation_notes: orderData.installation_notes,
-        requested_date: orderData.requested_date,
-        is_expedited: orderData.is_expedited,
+    const order = await prisma.order.create({
+      data: {
+        orderNumber: generateOrderNumber(),
+        userId: user.id,
+        postTypeId: postType.id,
+        propertyType: orderData.property_type as any,
+        propertyAddress: orderData.property_address,
+        propertyCity: orderData.property_city,
+        propertyState: orderData.property_state || 'KY',
+        propertyZip: orderData.property_zip,
+        propertyNotes: orderData.installation_notes,
+        scheduledDate: orderData.requested_date ? new Date(orderData.requested_date) : null,
+        isExpedited: orderData.is_expedited,
         subtotal,
-        fuel_surcharge: FUEL_SURCHARGE,
-        expedite_fee: expediteFee,
+        fuelSurcharge: FUEL_SURCHARGE,
+        expediteFee,
         total,
-        stripe_payment_intent_id: paymentIntent.id,
-        payment_status: paymentIntent.status === 'succeeded' ? 'succeeded' : 'processing',
-      })
-      .select()
-      .single()
-
-    if (orderError) {
-      return NextResponse.json({ error: orderError.message }, { status: 500 })
-    }
-
-    // Create order items
-    const orderItems = orderData.items.map((item) => ({
-      order_id: order.id,
-      ...item,
-    }))
-
-    const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
-
-    if (itemsError) {
-      console.error('Error creating order items:', itemsError)
-    }
+        paymentIntentId: paymentIntent.id,
+        paymentStatus: paymentIntent.status === 'succeeded' ? 'succeeded' : 'processing',
+        orderItems: {
+          create: orderData.items.map((item) => ({
+            itemType: item.item_type,
+            description: item.description,
+            quantity: item.quantity,
+            unitPrice: item.unit_price,
+            totalPrice: item.total_price,
+          })),
+        },
+      },
+      include: {
+        orderItems: true,
+      },
+    })
 
     // Send emails if payment succeeded
     if (paymentIntent.status === 'succeeded') {
       try {
         await Promise.all([
           sendOrderConfirmationEmail({
-            customerName: profile.full_name,
-            customerEmail: profile.email,
-            orderNumber: order.order_number,
-            propertyAddress: `${order.property_address}, ${order.property_city}, ${order.property_state} ${order.property_zip}`,
-            total: order.total,
+            customerName: user.fullName || user.name || '',
+            customerEmail: user.email,
+            orderNumber: order.orderNumber,
+            propertyAddress: `${order.propertyAddress}, ${order.propertyCity}, ${order.propertyState} ${order.propertyZip}`,
+            total: Number(order.total),
             items: orderData.items,
             requestedDate: orderData.requested_date,
           }),
           sendAdminOrderNotification({
-            orderNumber: order.order_number,
-            customerName: profile.full_name,
-            customerEmail: profile.email,
-            customerPhone: profile.phone,
-            propertyAddress: `${order.property_address}, ${order.property_city}, ${order.property_state} ${order.property_zip}`,
-            total: order.total,
+            orderNumber: order.orderNumber,
+            customerName: user.fullName || user.name || '',
+            customerEmail: user.email,
+            customerPhone: user.phone || '',
+            propertyAddress: `${order.propertyAddress}, ${order.propertyCity}, ${order.propertyState} ${order.propertyZip}`,
+            total: Number(order.total),
             items: orderData.items,
             requestedDate: orderData.requested_date,
             isExpedited: orderData.is_expedited,
