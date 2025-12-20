@@ -33,6 +33,7 @@ export const orderItemSchema = z.object({
 
 export const createOrderSchema = z.object({
   ...propertySchema.shape,
+  post_type: z.string().min(1, 'Post type is required'),
   items: z.array(orderItemSchema).min(1, 'At least one item is required'),
   requested_date: z.string().optional(),
   is_expedited: z.boolean().default(false),

@@ -7,10 +7,11 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
   icon?: React.ReactNode
+  helperText?: string
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, icon, type = 'text', ...props }, ref) => {
+  ({ className, label, error, icon, helperText, type = 'text', ...props }, ref) => {
     return (
       <div className="w-full">
         {label && (
@@ -42,6 +43,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         </div>
         {error && (
           <p className="mt-1.5 text-sm text-error">{error}</p>
+        )}
+        {helperText && !error && (
+          <p className="mt-1.5 text-sm text-gray-500">{helperText}</p>
         )}
       </div>
     )

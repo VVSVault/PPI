@@ -116,6 +116,7 @@ export function ReviewStep({
           property_zip: formData.property_zip,
           installation_location: formData.installation_location,
           installation_notes: formData.installation_notes,
+          post_type: formData.post_type,
           items,
           requested_date: formData.requested_date,
           is_expedited: formData.schedule_type === 'expedited',

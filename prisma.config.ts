@@ -6,14 +6,5 @@ import { config } from 'dotenv'
 config({ path: '.env.local' })
 
 export default defineConfig({
-  earlyAccess: true,
   schema: path.join(__dirname, 'prisma', 'schema.prisma'),
-  datasource: {
-    url: process.env.DATABASE_URL!,
-  },
-  migrate: {
-    async url() {
-      return process.env.DATABASE_URL!
-    },
-  },
 })

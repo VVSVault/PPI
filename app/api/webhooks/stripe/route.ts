@@ -32,9 +32,19 @@ export async function POST(request: NextRequest) {
       case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object as Stripe.PaymentIntent
 
-        // Find and update order by payment intent ID
-        const order = await prisma.order.update({
+        // Find order by payment intent ID
+        const existingOrder = await prisma.order.findFirst({
           where: { paymentIntentId: paymentIntent.id },
+        })
+
+        if (!existingOrder) {
+          console.error('Order not found for payment intent:', paymentIntent.id)
+          break
+        }
+
+        // Update order
+        const order = await prisma.order.update({
+          where: { id: existingOrder.id },
           data: {
             paymentStatus: 'succeeded',
             paidAt: new Date(),
@@ -88,7 +98,7 @@ export async function POST(request: NextRequest) {
       case 'payment_intent.payment_failed': {
         const paymentIntent = event.data.object as Stripe.PaymentIntent
 
-        await prisma.order.update({
+        await prisma.order.updateMany({
           where: { paymentIntentId: paymentIntent.id },
           data: { paymentStatus: 'failed' },
         })
@@ -99,7 +109,7 @@ export async function POST(request: NextRequest) {
       case 'payment_intent.canceled': {
         const paymentIntent = event.data.object as Stripe.PaymentIntent
 
-        await prisma.order.update({
+        await prisma.order.updateMany({
           where: { paymentIntentId: paymentIntent.id },
           data: {
             paymentStatus: 'failed',
