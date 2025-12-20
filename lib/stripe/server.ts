@@ -1,19 +1,32 @@
 import Stripe from 'stripe'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-  typescript: true,
-})
+// Lazy initialization to avoid build-time errors
+let stripeClient: Stripe | null = null
+
+function getStripe(): Stripe {
+  if (!stripeClient) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not configured')
+    }
+    stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2023-10-16',
+      typescript: true,
+    })
+  }
+  return stripeClient
+}
+
+export { getStripe as stripe }
 
 export async function createCustomer(email: string, name: string) {
-  return stripe.customers.create({
+  return getStripe().customers.create({
     email,
     name,
   })
 }
 
 export async function getCustomer(customerId: string) {
-  return stripe.customers.retrieve(customerId)
+  return getStripe().customers.retrieve(customerId)
 }
 
 export async function createPaymentIntent(
@@ -39,14 +52,14 @@ export async function createPaymentIntent(
     params.return_url = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/order-confirmation`
   }
 
-  return stripe.paymentIntents.create(params)
+  return getStripe().paymentIntents.create(params)
 }
 
 export async function confirmPaymentIntent(
   paymentIntentId: string,
   paymentMethodId: string
 ) {
-  return stripe.paymentIntents.confirm(paymentIntentId, {
+  return getStripe().paymentIntents.confirm(paymentIntentId, {
     payment_method: paymentMethodId,
     return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/order-confirmation`,
   })
@@ -56,17 +69,17 @@ export async function attachPaymentMethod(
   paymentMethodId: string,
   customerId: string
 ) {
-  return stripe.paymentMethods.attach(paymentMethodId, {
+  return getStripe().paymentMethods.attach(paymentMethodId, {
     customer: customerId,
   })
 }
 
 export async function detachPaymentMethod(paymentMethodId: string) {
-  return stripe.paymentMethods.detach(paymentMethodId)
+  return getStripe().paymentMethods.detach(paymentMethodId)
 }
 
 export async function listPaymentMethods(customerId: string) {
-  return stripe.paymentMethods.list({
+  return getStripe().paymentMethods.list({
     customer: customerId,
     type: 'card',
   })
@@ -76,7 +89,7 @@ export async function setDefaultPaymentMethod(
   customerId: string,
   paymentMethodId: string
 ) {
-  return stripe.customers.update(customerId, {
+  return getStripe().customers.update(customerId, {
     invoice_settings: {
       default_payment_method: paymentMethodId,
     },
@@ -84,7 +97,7 @@ export async function setDefaultPaymentMethod(
 }
 
 export async function createSetupIntent(customerId: string) {
-  return stripe.setupIntents.create({
+  return getStripe().setupIntents.create({
     customer: customerId,
     payment_method_types: ['card'],
   })

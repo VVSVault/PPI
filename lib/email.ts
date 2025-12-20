@@ -1,6 +1,17 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy initialization to avoid build-time errors
+let resend: Resend | null = null
+
+function getResend(): Resend {
+  if (!resend) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY is not configured')
+    }
+    resend = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resend
+}
 
 interface OrderConfirmationEmailProps {
   customerName: string
@@ -84,7 +95,7 @@ export async function sendOrderConfirmationEmail({
     </html>
   `
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: 'Pink Post Installations <orders@pinkpostinstallations.com>',
     to: customerEmail,
     subject: `Order Confirmation - ${orderNumber}`,
@@ -141,7 +152,7 @@ Total: $${total.toFixed(2)}
 View order details in the admin dashboard.
   `.trim()
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: 'Pink Post Installations <orders@pinkpostinstallations.com>',
     to: process.env.ADMIN_EMAIL!,
     subject: `${isExpedited ? '⚡ EXPEDITED ' : ''}New Order: ${orderNumber}`,
@@ -185,7 +196,7 @@ export async function sendInstallationCompleteEmail(
     </html>
   `
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: 'Pink Post Installations <orders@pinkpostinstallations.com>',
     to: customerEmail,
     subject: 'Your Sign Installation is Complete!',
