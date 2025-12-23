@@ -6,6 +6,8 @@ import bcrypt from 'bcryptjs'
 export const authOptions: NextAuthOptions = {
   // Note: PrismaAdapter removed - not needed for JWT strategy with credentials provider
   // and can cause issues if schema has relations to tables that don't exist yet
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
   providers: [
     CredentialsProvider({
       name: 'credentials',
