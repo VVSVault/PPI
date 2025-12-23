@@ -122,9 +122,28 @@ export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Progress Steps */}
+      {/* Progress Steps - Mobile: simplified, Desktop: full */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
+        {/* Mobile Progress Bar */}
+        <div className="md:hidden">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-900">
+              Step {currentStep + 1} of {steps.length}
+            </span>
+            <span className="text-sm text-pink-600 font-medium">
+              {steps[currentStep].title}
+            </span>
+          </div>
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-pink-500 transition-all duration-300"
+              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Desktop Step Indicator */}
+        <div className="hidden md:flex items-center justify-between">
           {steps.map((step, index) => (
             <div
               key={step.id}
@@ -167,7 +186,7 @@ export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
       </div>
 
       {/* Step Content */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8 mt-12">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8 mt-4 md:mt-12">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
