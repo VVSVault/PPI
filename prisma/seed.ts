@@ -4,10 +4,20 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
-// Load environment variables from .env.local
-config({ path: '.env.local' })
+// Only load from .env files if DATABASE_URL is not already set (production)
+if (!process.env.DATABASE_URL) {
+  config({ path: '.env.local' })
+  config({ path: '.env' })
+}
 
 console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'Not set')
+
+if (!process.env.DATABASE_URL) {
+  console.error('ERROR: DATABASE_URL is not set!')
+  console.error('For Railway: Make sure DATABASE_URL environment variable is configured')
+  console.error('For local: Create a .env.local file with DATABASE_URL')
+  process.exit(1)
+}
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
