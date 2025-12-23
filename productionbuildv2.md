@@ -26,6 +26,78 @@ This document covers all development progress, bug fixes, and deployment configu
 
 ## New Features
 
+### v2.8.0 - Password Reset & Mobile UX
+
+#### Forgot Password Flow
+Complete password reset functionality with Resend email integration:
+
+**New Database Model:**
+```prisma
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_reset_tokens")
+}
+```
+
+**New Pages:**
+- `/forgot-password` - Email entry form
+- `/reset-password?token=xxx` - New password form
+
+**New API Endpoints:**
+- `POST /api/auth/forgot-password` - Request reset email
+- `POST /api/auth/reset-password` - Reset password with token
+
+**Features:**
+- Secure token generation (32-byte hex)
+- 1-hour token expiration
+- Prevents email enumeration (same response for valid/invalid emails)
+- Styled email template matching brand
+
+#### Mobile Dashboard Improvements
+Comprehensive mobile responsiveness fixes:
+
+**Header Component:**
+- Added padding to clear hamburger menu button
+- Responsive text sizes and gaps
+- Shortened button labels on mobile ("+ Order")
+
+**Dashboard Page:**
+- Responsive padding (`p-4 lg:p-6`)
+- Stacked layout for section headers on mobile
+- Full-width search input on small screens
+
+**Active Installations:**
+- Mobile card view (replaces table on screens < 768px)
+- Cards show: address, city/state, date, MLS#, status badge
+- Dropdown menu preserved on cards
+- Table hidden on mobile, shown on desktop
+
+**Order Wizard Step Indicator:**
+- Mobile: Simple progress bar with "Step X of 8"
+- Shows current step title
+- Animated fill progress
+- Desktop: Original circle indicators unchanged
+
+#### Business Logic Updates
+
+**Removed Sold Rider:**
+- Removed from marketing riders page
+- Removed from dashboard rider options
+- Removed from RiderSelector checkout flow
+- Replaced with "Open House" in Popular category
+
+**Updated Reinstallation Fee:**
+- Changed from $35 to FREE
+- Added disclaimer: "*FREE if caused by weather or other natural causes"
+- Green color highlight for FREE text
+
+---
+
 ### v2.7.0 - Service Requests & Installation Actions
 
 #### ServiceRequest Model
@@ -330,6 +402,14 @@ Creates:
 | GET | `/api/admin/service-requests/[id]` | Get request details (admin) |
 | PUT | `/api/admin/service-requests/[id]` | Update request status (admin) |
 
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/forgot-password` | Request password reset email |
+| POST | `/api/auth/reset-password` | Reset password with token |
+
 ### Profile
 
 | Method | Endpoint | Description |
@@ -417,6 +497,10 @@ Creates:
 
 | Commit | Description |
 |--------|-------------|
+| `cbf8e7b` | Remove Sold rider and update reinstallation fee |
+| `74ee9bd` | Fix order wizard step indicator for mobile |
+| `75648c3` | Add forgot password feature and mobile dashboard improvements |
+| `3f0ae7c` | Add productionbuildv2.md documentation |
 | `8f5c51a` | Add session persistence with 30-day cookie duration |
 | `b0b548d` | Fix start command for Railway deployment |
 | `dc9061d` | Fix seed script to work with Railway environment variables |
@@ -432,13 +516,16 @@ Creates:
 
 ## Next Steps
 
-1. **Run migration** on Railway for ServiceRequest table
+1. **Run migration** on Railway for PasswordResetToken and ServiceRequest tables
+   ```bash
+   npx prisma db push
+   ```
 2. **Update admin credentials** after first login
 3. **Configure Stripe webhooks** for payment processing
-4. **Set up email templates** for order notifications
-5. **Test full order flow** end-to-end
+4. **Test password reset flow** end-to-end
+5. **Test mobile responsiveness** on various devices
 
 ---
 
 *Last Updated: December 2024*
-*Version: 2.7.0*
+*Version: 2.8.0*
