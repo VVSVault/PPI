@@ -5,7 +5,6 @@ import { Card, CardContent, Button } from '@/components/ui'
 import Link from 'next/link'
 
 const riders = [
-  { name: 'SOLD', slug: 'sold', price: 5, color: 'bg-red-500' },
   { name: 'Open House', slug: 'open-house', price: 5, color: 'bg-blue-500' },
   { name: 'Coming Soon', slug: 'coming-soon', price: 5, color: 'bg-purple-500' },
   { name: 'Price Reduced', slug: 'price-reduced', price: 5, color: 'bg-orange-500' },

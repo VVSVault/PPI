@@ -26,13 +26,13 @@ const RiderCallout = () => {
                   Full Rider Selection
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  <span className="font-semibold text-gray-900">Sold</span>
+                  <span className="font-semibold text-gray-900">Open House</span>
                   {' • '}
                   <span className="font-semibold text-gray-900">Pending</span>
                   {' • '}
                   <span className="font-semibold text-gray-900">Coming Soon</span>
                   {' • '}
-                  <span className="text-pink-600 font-medium">24 more options</span>
+                  <span className="text-pink-600 font-medium">20+ more options</span>
                 </p>
                 <p className="text-gray-600">
                   Rent ours for{' '}

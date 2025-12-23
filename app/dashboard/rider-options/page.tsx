@@ -26,7 +26,7 @@ const categories: Category[] = [
     label: 'Popular',
     icon: Star,
     riders: [
-      { id: 'sold', name: 'Sold' },
+      { id: 'open-house', name: 'Open House' },
       { id: 'pending', name: 'Pending' },
       { id: 'coming-soon', name: 'Coming Soon' },
       { id: 'for-sale', name: 'For Sale' },
@@ -37,7 +37,7 @@ const categories: Category[] = [
     label: 'Status',
     icon: Tag,
     riders: [
-      { id: 'sold', name: 'Sold' },
+      { id: 'open-house', name: 'Open House' },
       { id: 'pending', name: 'Pending' },
       { id: 'coming-soon', name: 'Coming Soon' },
       { id: 'for-sale', name: 'For Sale' },

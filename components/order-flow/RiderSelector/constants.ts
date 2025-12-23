@@ -47,13 +47,13 @@ export const RIDER_CATEGORIES: RiderCategoryConfig[] = [
 
 export const RIDERS: RiderOption[] = [
   // === POPULAR (duplicates from other categories for quick access) ===
-  { id: 'pop-sold', name: 'Sold', slug: 'sold', category: 'popular', icon: 'CheckCircle' },
+  { id: 'pop-open-house', name: 'Open House', slug: 'open-house', category: 'popular', icon: 'Home' },
   { id: 'pop-pending', name: 'Pending', slug: 'pending', category: 'popular', icon: 'Clock' },
   { id: 'pop-coming-soon', name: 'Coming Soon', slug: 'coming-soon', category: 'popular', icon: 'Calendar' },
   { id: 'pop-for-sale', name: 'For Sale', slug: 'for-sale', category: 'popular', icon: 'DollarSign' },
 
   // === STATUS ===
-  { id: 'sold', name: 'Sold', slug: 'sold', category: 'status', icon: 'CheckCircle' },
+  { id: 'open-house', name: 'Open House', slug: 'open-house', category: 'status', icon: 'Home' },
   { id: 'pending', name: 'Pending', slug: 'pending', category: 'status', icon: 'Clock' },
   { id: 'coming-soon', name: 'Coming Soon', slug: 'coming-soon', category: 'status', icon: 'Calendar' },
   { id: 'for-sale', name: 'For Sale', slug: 'for-sale', category: 'status', icon: 'DollarSign' },
@@ -107,7 +107,7 @@ export const RIDER_PRICING = {
   install: 2.00
 }
 
-export const POPULAR_RIDER_IDS = ['pop-sold', 'pop-pending', 'pop-coming-soon', 'pop-for-sale']
+export const POPULAR_RIDER_IDS = ['pop-open-house', 'pop-pending', 'pop-coming-soon', 'pop-for-sale']
 
 export function getRidersByCategory(category: string): RiderOption[] {
   return RIDERS.filter(r => r.category === category)

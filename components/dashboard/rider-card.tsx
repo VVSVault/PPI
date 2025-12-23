@@ -11,7 +11,6 @@ interface RiderCardProps {
 }
 
 const riderColors: Record<string, string> = {
-  sold: 'bg-red-500',
   'open-house': 'bg-blue-500',
   'coming-soon': 'bg-purple-500',
   'price-reduced': 'bg-orange-500',

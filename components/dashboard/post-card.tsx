@@ -66,13 +66,16 @@ const PostCard = ({
             <span className="font-semibold text-gray-900">${installationFee}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Reinstallation</span>
-            <span className="font-semibold text-gray-900">${reinstallFee}</span>
+            <span className="text-gray-500">Reinstallation*</span>
+            <span className="font-semibold text-green-600">FREE</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">Replacement</span>
             <span className="font-semibold text-gray-900">${replacementFee}</span>
           </div>
+          <p className="text-xs text-gray-400 mt-2">
+            *FREE if caused by weather or other natural causes
+          </p>
         </div>
 
         <Button
