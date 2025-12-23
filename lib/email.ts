@@ -160,6 +160,52 @@ View order details in the admin dashboard.
   })
 }
 
+export async function sendPasswordResetEmail(
+  email: string,
+  resetToken: string
+) {
+  const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Reset Your Password - Pink Post Installations</title>
+    </head>
+    <body style="font-family: 'Poppins', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #FFF0F3;">
+      <div style="background-color: white; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h1 style="color: #E84A7A; margin: 0;">Pink Post Installations</h1>
+          <p style="color: #666; margin: 8px 0 0;">Password Reset Request</p>
+        </div>
+
+        <p style="color: #333;">Hi,</p>
+        <p style="color: #333;">We received a request to reset your password. Click the button below to create a new password:</p>
+
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${resetUrl}" style="background-color: #E84A7A; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Reset Password</a>
+        </div>
+
+        <p style="color: #666; font-size: 14px;">This link will expire in 1 hour for security reasons.</p>
+        <p style="color: #666; font-size: 14px;">If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
+
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #eee; text-align: center;">
+          <p style="color: #999; margin: 0; font-size: 12px;">&copy; ${new Date().getFullYear()} Pink Post Installations. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+
+  return getResend().emails.send({
+    from: 'Pink Post Installations <noreply@pinkpostinstallations.com>',
+    to: email,
+    subject: 'Reset Your Password - Pink Post Installations',
+    html,
+  })
+}
+
 export async function sendInstallationCompleteEmail(
   customerEmail: string,
   customerName: string,

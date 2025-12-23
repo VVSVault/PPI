@@ -92,23 +92,21 @@ export default function DashboardPage() {
         }}
       />
 
-      <div className="p-6 space-y-6">
+      <div className="p-4 lg:p-6 space-y-6">
         {/* Stats Cards */}
         <StatsCards stats={mockStats} />
 
         {/* Active Installations */}
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
               Active Installations
             </h2>
-            <div className="flex items-center gap-4">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+            />
           </div>
           <ActivePostsTable installations={mockInstallations} />
         </div>

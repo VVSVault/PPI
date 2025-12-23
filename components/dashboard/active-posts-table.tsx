@@ -11,7 +11,7 @@ import {
   Badge,
   Button,
 } from '@/components/ui'
-import { MoreVertical, Calendar, Wrench, Eye } from 'lucide-react'
+import { MoreVertical, Calendar, Wrench, Eye, MapPin } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import {
   InstallationDetailsModal,
@@ -79,7 +79,101 @@ const ActivePostsTable = ({ installations, onRefresh }: ActivePostsTableProps) =
 
   return (
     <>
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {installations.map((installation) => (
+          <div
+            key={installation.id}
+            className="bg-white rounded-lg border border-gray-200 p-4"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin className="w-4 h-4 text-pink-500 shrink-0" />
+                  <p className="font-medium text-gray-900 truncate">
+                    {installation.address}
+                  </p>
+                </div>
+                <p className="text-sm text-gray-500 mb-3">
+                  {installation.city}, {installation.state} {installation.zip}
+                </p>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                  <span>{formatDate(installation.installDate)}</span>
+                  {installation.mlsNumber && (
+                    <>
+                      <span>•</span>
+                      <span>MLS: {installation.mlsNumber}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <Badge variant={statusConfig[installation.status].variant}>
+                  {statusConfig[installation.status].label}
+                </Badge>
+                <div className="relative">
+                  <button
+                    onClick={() =>
+                      setOpenMenuId(
+                        openMenuId === installation.id ? null : installation.id
+                      )
+                    }
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <MoreVertical className="w-4 h-4 text-gray-500" />
+                  </button>
+                  {openMenuId === installation.id && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setOpenMenuId(null)}
+                      />
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20 py-1">
+                        <button
+                          onClick={() => handleViewDetails(installation)}
+                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View Details
+                        </button>
+                        {installation.status === 'active' && (
+                          <button
+                            onClick={() => handleScheduleRemoval(installation)}
+                            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          >
+                            <Calendar className="w-4 h-4" />
+                            Schedule Removal
+                          </button>
+                        )}
+                        {installation.status !== 'removed' && (
+                          <button
+                            onClick={() => handleRequestService(installation)}
+                            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          >
+                            <Wrench className="w-4 h-4" />
+                            Request Service
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+        {installations.length === 0 && (
+          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+            <p className="text-gray-500">No active installations found.</p>
+            <Button variant="primary" className="mt-4">
+              Place Your First Order
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
