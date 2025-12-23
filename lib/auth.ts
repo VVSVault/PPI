@@ -1,11 +1,11 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { PrismaAdapter } from '@auth/prisma-adapter'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
+  // Note: PrismaAdapter removed - not needed for JWT strategy with credentials provider
+  // and can cause issues if schema has relations to tables that don't exist yet
   providers: [
     CredentialsProvider({
       name: 'credentials',
