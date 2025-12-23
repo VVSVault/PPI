@@ -33,7 +33,6 @@ export async function GET(request: NextRequest) {
       revenueToday,
       revenueThisWeek,
       revenueThisMonth,
-      pendingServiceRequests,
     ] = await Promise.all([
       prisma.user.count({
         where: { role: 'customer' },
@@ -74,10 +73,18 @@ export async function GET(request: NextRequest) {
         },
         select: { total: true },
       }),
-      prisma.serviceRequest.count({
-        where: { status: { in: ['pending', 'acknowledged'] } },
-      }),
     ])
+
+    // Service requests query - handle gracefully if table doesn't exist yet
+    let pendingServiceRequests = 0
+    try {
+      pendingServiceRequests = await prisma.serviceRequest.count({
+        where: { status: { in: ['pending', 'acknowledged'] } },
+      })
+    } catch {
+      // Table may not exist yet if migration hasn't run
+      pendingServiceRequests = 0
+    }
 
     const calculateRevenue = (orders: { total: any }[]) =>
       orders.reduce((sum, order) => sum + Number(order.total || 0), 0)

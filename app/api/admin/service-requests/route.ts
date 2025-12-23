@@ -20,47 +20,57 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const serviceRequests = await prisma.serviceRequest.findMany({
-      where: {
-        ...(status ? { status: status as any } : {}),
-        ...(type ? { type: type as any } : {}),
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            fullName: true,
-            phone: true,
-            company: true,
+    // Try to fetch service requests - table may not exist if migration hasn't run
+    let serviceRequests: any[] = []
+    let statusCounts: Record<string, number> = {}
+
+    try {
+      serviceRequests = await prisma.serviceRequest.findMany({
+        where: {
+          ...(status ? { status: status as any } : {}),
+          ...(type ? { type: type as any } : {}),
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true,
+              phone: true,
+              company: true,
+            },
+          },
+          installation: {
+            select: {
+              id: true,
+              propertyAddress: true,
+              propertyCity: true,
+              propertyState: true,
+              propertyZip: true,
+              status: true,
+            },
           },
         },
-        installation: {
-          select: {
-            id: true,
-            propertyAddress: true,
-            propertyCity: true,
-            propertyState: true,
-            propertyZip: true,
-            status: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-      skip: offset,
-    })
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip: offset,
+      })
 
-    // Get counts for dashboard
-    const counts = await prisma.serviceRequest.groupBy({
-      by: ['status'],
-      _count: true,
-    })
+      // Get counts for dashboard
+      const counts = await prisma.serviceRequest.groupBy({
+        by: ['status'],
+        _count: true,
+      })
 
-    const statusCounts = counts.reduce((acc, item) => {
-      acc[item.status] = item._count
-      return acc
-    }, {} as Record<string, number>)
+      statusCounts = counts.reduce((acc, item) => {
+        acc[item.status] = item._count
+        return acc
+      }, {} as Record<string, number>)
+    } catch {
+      // Table may not exist yet if migration hasn't run
+      serviceRequests = []
+      statusCounts = {}
+    }
 
     return NextResponse.json({
       serviceRequests,

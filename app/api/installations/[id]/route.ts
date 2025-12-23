@@ -33,17 +33,34 @@ export async function GET(
             lockboxType: true,
           },
         },
-        serviceRequests: {
-          orderBy: { createdAt: 'desc' },
-        },
       },
     })
 
-    if (!installation) {
+    // Fetch service requests separately - table may not exist if migration hasn't run
+    let serviceRequests: any[] = []
+    try {
+      if (installation) {
+        serviceRequests = await prisma.serviceRequest.findMany({
+          where: { installationId: id },
+          orderBy: { createdAt: 'desc' },
+        })
+      }
+    } catch {
+      // Table may not exist yet
+      serviceRequests = []
+    }
+
+    // Add serviceRequests to installation object
+    const installationWithRequests = installation ? {
+      ...installation,
+      serviceRequests,
+    } : null
+
+    if (!installationWithRequests) {
       return NextResponse.json({ error: 'Installation not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ installation })
+    return NextResponse.json({ installation: installationWithRequests })
   } catch (error) {
     console.error('Error fetching installation:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
