@@ -7,4 +7,7 @@ config({ path: '.env.local' })
 
 export default defineConfig({
   schema: path.join(__dirname, 'prisma', 'schema.prisma'),
+  migrations: {
+    seed: 'npx tsx prisma/seed.ts',
+  },
 })
