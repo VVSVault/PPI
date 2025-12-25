@@ -12,7 +12,7 @@ const Logo = ({ variant = 'dark', size = 'md', className }: LogoProps) => {
   const imageSizes = {
     sm: { width: 32, height: 32 },
     md: { width: 40, height: 40 },
-    lg: { width: 48, height: 48 },
+    lg: { width: 56, height: 56 },
   }
 
   const textSizes = {
