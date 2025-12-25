@@ -96,6 +96,24 @@ Comprehensive mobile responsiveness fixes:
 - Added disclaimer: "*FREE if caused by weather or other natural causes"
 - Green color highlight for FREE text
 
+#### Branding Updates
+
+**New Logo Mascot:**
+- Replaced CSS-styled logo with pink bird mascot image
+- Bird holding sign post with "Pp" branding
+- Image stored at `/public/images/logo.png`
+- Logo component updated to use Next.js Image
+
+**Logo Component (`components/shared/logo.tsx`):**
+- Uses Next.js Image component for optimization
+- Responsive sizes: sm (32x32), md (40x40), lg (56x56)
+- Supports light/dark text variants
+- Text displays "Pink" + "Post" (pink colored)
+
+**Marketing Header:**
+- Increased navbar height to `h-20` (was `h-16`)
+- Logo size increased to `lg` variant (56x56)
+
 ---
 
 ### v2.7.0 - Service Requests & Installation Actions
@@ -457,7 +475,7 @@ Creates:
 - Automatically assigned `customer` role
 - API: `POST /api/auth/register`
 
-### Admin Access
+### Admin Access"C:\Users\tanne\Downloads\8d52185d-f97a-4cdb-896a-31ab64a8933c.png"
 - Only seeded via `npx prisma db seed`
 - Default: `admin@pinkposts.com` / `admin123`
 - Role: `admin`
@@ -497,6 +515,9 @@ Creates:
 
 | Commit | Description |
 |--------|-------------|
+| `65f2ad0` | Increase logo size in marketing header |
+| `923f62a` | Replace CSS logo with pink bird mascot image |
+| `9ba406e` | Update productionbuildv2.md for v2.8.0 |
 | `cbf8e7b` | Remove Sold rider and update reinstallation fee |
 | `74ee9bd` | Fix order wizard step indicator for mobile |
 | `75648c3` | Add forgot password feature and mobile dashboard improvements |
