@@ -2,12 +2,55 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { createWelcomeNotification } from '@/lib/notifications'
+import { checkRateLimit, rateLimitPresets } from '@/lib/rate-limit'
+
+// Password validation rules
+const PASSWORD_MIN_LENGTH = 8
+const PASSWORD_REGEX = {
+  hasUppercase: /[A-Z]/,
+  hasLowercase: /[a-z]/,
+  hasNumber: /[0-9]/,
+}
+
+function validatePassword(password: string): { valid: boolean; errors: string[] } {
+  const errors: string[] = []
+
+  if (password.length < PASSWORD_MIN_LENGTH) {
+    errors.push(`Password must be at least ${PASSWORD_MIN_LENGTH} characters`)
+  }
+
+  if (!PASSWORD_REGEX.hasUppercase.test(password)) {
+    errors.push('Password must contain at least one uppercase letter')
+  }
+
+  if (!PASSWORD_REGEX.hasLowercase.test(password)) {
+    errors.push('Password must contain at least one lowercase letter')
+  }
+
+  if (!PASSWORD_REGEX.hasNumber.test(password)) {
+    errors.push('Password must contain at least one number')
+  }
+
+  return { valid: errors.length === 0, errors }
+}
+
+function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting - 5 registration attempts per 15 minutes
+  const rateLimitResponse = checkRateLimit(request, rateLimitPresets.auth)
+  if (rateLimitResponse) {
+    return rateLimitResponse
+  }
+
   try {
     const body = await request.json()
     const { email, password, fullName, phone, company } = body
 
+    // Validate required fields
     if (!email || !password || !fullName) {
       return NextResponse.json(
         { error: 'Email, password, and full name are required' },
@@ -15,9 +58,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate email format
+    if (!validateEmail(email)) {
+      return NextResponse.json(
+        { error: 'Please enter a valid email address' },
+        { status: 400 }
+      )
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePassword(password)
+    if (!passwordValidation.valid) {
+      return NextResponse.json(
+        { error: passwordValidation.errors.join('. ') },
+        { status: 400 }
+      )
+    }
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: email.toLowerCase() },
     })
 
     if (existingUser) {
@@ -30,10 +90,10 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create user
+    // Create user (store email in lowercase for consistency)
     const user = await prisma.user.create({
       data: {
-        email,
+        email: email.toLowerCase(),
         password: hashedPassword,
         fullName,
         name: fullName,

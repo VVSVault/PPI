@@ -455,6 +455,7 @@ WHERE email = 'user@example.com';
 | `lib/prisma.ts` | Prisma client with pg adapter |
 | `lib/auth.ts` | NextAuth configuration |
 | `lib/auth-utils.ts` | Auth helper functions |
+| `lib/rate-limit.ts` | Rate limiting and account lockout |
 | `lib/stripe/server.ts` | Stripe server-side utilities |
 | `lib/stripe/client.ts` | Stripe client-side loader |
 | `lib/email.ts` | Email templates and sending |
@@ -464,6 +465,24 @@ WHERE email = 'user@example.com';
 ---
 
 ## Changelog
+
+### v2.9.1 (Security Hardening)
+
+- **New:** Route protection middleware (`middleware.ts`)
+  - Protects `/dashboard/*` and `/admin/*` pages
+  - Protects API routes requiring authentication
+  - Admin routes require admin role
+- **New:** Rate limiting for auth endpoints
+  - 5 attempts per 15 minutes for login/register
+  - Returns 429 with Retry-After header when exceeded
+- **New:** Account lockout after failed logins
+  - 5 failed attempts locks account for 15 minutes
+  - Clear error message with remaining lockout time
+- **New:** Password strength validation
+  - Minimum 8 characters
+  - Requires uppercase, lowercase, and number
+- **Improved:** Email stored in lowercase for consistency
+- **Added:** `lib/rate-limit.ts` utility with presets
 
 ### v2.9.0 (Client Spec Updates & Notifications)
 

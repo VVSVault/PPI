@@ -2,6 +2,12 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import {
+  isAccountLocked,
+  trackFailedLogin,
+  clearFailedLogins,
+  getLockoutTimeRemaining,
+} from '@/lib/rate-limit'
 
 export const authOptions: NextAuthOptions = {
   // Note: PrismaAdapter removed - not needed for JWT strategy with credentials provider
@@ -20,19 +26,31 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Email and password are required')
         }
 
+        // Check if account is locked due to too many failed attempts
+        if (isAccountLocked(credentials.email)) {
+          const remaining = getLockoutTimeRemaining(credentials.email)
+          const minutes = Math.ceil(remaining / 60)
+          throw new Error(`Account temporarily locked. Try again in ${minutes} minute(s).`)
+        }
+
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         })
 
         if (!user || !user.password) {
+          trackFailedLogin(credentials.email)
           throw new Error('Invalid email or password')
         }
 
         const isValid = await bcrypt.compare(credentials.password, user.password)
 
         if (!isValid) {
+          trackFailedLogin(credentials.email)
           throw new Error('Invalid email or password')
         }
+
+        // Clear failed attempts on successful login
+        clearFailedLogins(credentials.email)
 
         return {
           id: user.id,
