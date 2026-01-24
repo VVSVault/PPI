@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document covers all development progress, bug fixes, and deployment configurations made during the v2.5-v2.7 development cycle. Pink Post Installations is a Next.js 14 application for real estate sign installation services.
+This document covers all development progress, bug fixes, and deployment configurations made during the v2.5-v2.9 development cycle. Pink Post Installations is a Next.js 14 application for real estate sign installation services.
 
 **Repository:** https://github.com/VVSVault/PPI
 **Hosting:** Railway
@@ -25,6 +25,179 @@ This document covers all development progress, bug fixes, and deployment configu
 ---
 
 ## New Features
+
+### v2.9.1 - Security Hardening
+
+#### Route Protection Middleware
+New `middleware.ts` at project root for edge-level route protection:
+
+```typescript
+// middleware.ts
+export default withAuth(
+  function middleware(req) {
+    // Admin routes require admin role
+    if (path.startsWith('/admin') && token?.role !== 'admin') {
+      return NextResponse.redirect(new URL('/dashboard', req.url))
+    }
+    return NextResponse.next()
+  },
+  {
+    callbacks: {
+      authorized: ({ token, req }) => {
+        // Protected routes require authentication
+        if (path.startsWith('/dashboard') || path.startsWith('/api/orders')) {
+          return !!token
+        }
+        return true
+      },
+    },
+  }
+)
+```
+
+**Protected Routes:**
+- `/dashboard/*` - Requires authentication
+- `/admin/*` - Requires admin role
+- API routes: orders, profile, inventory, notifications, payments, service-requests
+
+#### Rate Limiting
+New `lib/rate-limit.ts` utility for protecting auth endpoints:
+
+```typescript
+// Rate limit presets
+export const rateLimitPresets = {
+  auth: { windowMs: 15 * 60 * 1000, maxRequests: 5 },      // 5 per 15 min
+  passwordReset: { windowMs: 60 * 60 * 1000, maxRequests: 3 }, // 3 per hour
+  api: { windowMs: 15 * 60 * 1000, maxRequests: 100 },    // 100 per 15 min
+}
+```
+
+**Features:**
+- In-memory rate limiting (single-instance deployments)
+- Returns 429 with `Retry-After` header
+- Automatic cleanup of expired entries
+
+#### Account Lockout
+Protects against brute force attacks:
+
+```typescript
+// After 5 failed login attempts
+if (failedAttempts >= 5) {
+  lockoutUntil = now + 15 * 60 * 1000 // 15 minute lockout
+}
+```
+
+**Integration in `lib/auth.ts`:**
+- Tracks failed attempts per email
+- Locks account after 5 failures
+- Shows remaining lockout time in error message
+- Clears on successful login
+
+#### Password Strength Validation
+Registration endpoint now validates passwords:
+
+```typescript
+// Password requirements
+const PASSWORD_MIN_LENGTH = 8
+const PASSWORD_REGEX = {
+  hasUppercase: /[A-Z]/,
+  hasLowercase: /[a-z]/,
+  hasNumber: /[0-9]/,
+}
+```
+
+**Requirements:**
+- Minimum 8 characters
+- At least one uppercase letter
+- At least one lowercase letter
+- At least one number
+
+---
+
+### v2.9.0 - Client Spec Updates & Notifications
+
+#### Notification System
+Complete in-app notification system for users:
+
+**New Database Model:**
+```prisma
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+  user      User             @relation(...)
+}
+
+enum NotificationType {
+  order_confirmed, order_scheduled, order_in_progress, order_completed,
+  order_cancelled, service_request_acknowledged, service_request_scheduled,
+  service_request_completed, removal_reminder, welcome
+}
+```
+
+**New Components:**
+- `NotificationDropdown` - Bell icon dropdown in dashboard header
+- Auto-polls every 30 seconds for new notifications
+- Mark as read (individual or all)
+- Icon per notification type
+
+**New API Endpoints:**
+- `GET /api/notifications` - Fetch notifications with unread count
+- `PUT /api/notifications` - Mark notifications as read
+
+**Notification Triggers:**
+- Order status changes (confirmed, scheduled, completed, cancelled)
+- Service request updates (acknowledged, scheduled, completed)
+- New user registration (welcome message)
+
+#### Order Form Questions
+New required fields per client specification:
+
+1. **Gated Community**
+   - Yes/No toggle
+   - Gate code field (required if Yes)
+
+2. **Marker Placement**
+   - "Did you leave a marker where you want the post placed?"
+   - Yes/No toggle
+
+3. **Sign Orientation**
+   - Perpendicular (faces street directly)
+   - Parallel (runs along street)
+   - Corner Angle (angled toward intersection)
+   - Let Installer Decide
+   - Other (with text field)
+
+#### Pricing Updates
+Updated per client specification:
+
+| Item | Old Price | New Price |
+|------|-----------|-----------|
+| Expedite Fee | $25 | $50 |
+| Lockbox Rental | $15 | $10 |
+| Brochure Box Install | $2 | $3 |
+| Brochure Box Rental | N/A | $5 (new option) |
+
+#### Dashboard Real Data
+- New users see empty state with CTA instead of mock data
+- Stats calculated from actual orders and installations
+- Fetches real data from `/api/dashboard/stats`
+
+#### Logo Navigation
+Context-aware logo links:
+- On dashboard/admin pages → links to `/dashboard`
+- On marketing pages → links to `/` (home)
+
+#### Removed Features
+- Replacement charges removed from Post Options cards
+- "Buy new" brochure box option replaced with rental
+
+---
 
 ### v2.8.0 - Password Reset & Mobile UX
 
@@ -474,8 +647,10 @@ Creates:
 - Users self-register at `/sign-up`
 - Automatically assigned `customer` role
 - API: `POST /api/auth/register`
+- **Password requirements:** 8+ chars, uppercase, lowercase, number
+- **Rate limited:** 5 attempts per 15 minutes
 
-### Admin Access"C:\Users\tanne\Downloads\8d52185d-f97a-4cdb-896a-31ab64a8933c.png"
+### Admin Access
 - Only seeded via `npx prisma db seed`
 - Default: `admin@pinkposts.com` / `admin123`
 - Role: `admin`
@@ -484,6 +659,13 @@ Creates:
 - JWT strategy with 30-day persistence
 - Secure cookies in production
 - Auto-refresh on activity
+
+### Security Features (v2.9.1)
+- **Route Protection:** Middleware protects `/dashboard/*` and `/admin/*`
+- **Rate Limiting:** Auth endpoints limited to 5 requests per 15 minutes
+- **Account Lockout:** 5 failed logins = 15 minute lockout
+- **Password Validation:** Minimum 8 chars with complexity requirements
+- **Secure Cookies:** HttpOnly, SameSite=Lax, Secure in production
 
 ---
 
@@ -515,6 +697,9 @@ Creates:
 
 | Commit | Description |
 |--------|-------------|
+| `0ca2c48` | v2.9.1: Security hardening - middleware, rate limiting, password validation |
+| `883780a` | v2.9.0: Notification system and client spec updates |
+| `12f8bf2` | Update productionbuildv2.md with logo changes |
 | `65f2ad0` | Increase logo size in marketing header |
 | `923f62a` | Replace CSS logo with pink bird mascot image |
 | `9ba406e` | Update productionbuildv2.md for v2.8.0 |
@@ -537,16 +722,14 @@ Creates:
 
 ## Next Steps
 
-1. **Run migration** on Railway for PasswordResetToken and ServiceRequest tables
-   ```bash
-   npx prisma db push
-   ```
+1. **Database migrations are current** - PasswordResetToken, ServiceRequest, and Notification tables deployed
 2. **Update admin credentials** after first login
 3. **Configure Stripe webhooks** for payment processing
 4. **Test password reset flow** end-to-end
 5. **Test mobile responsiveness** on various devices
+6. **Security testing** - Verify rate limiting and account lockout work as expected
 
 ---
 
-*Last Updated: December 2024*
-*Version: 2.8.0*
+*Last Updated: January 2025*
+*Version: 2.9.1*
