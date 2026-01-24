@@ -81,10 +81,10 @@ export function ReviewStep({
       description: 'Brochure Box Install (from storage)',
       price: PRICING.brochure_box_install,
     })
-  } else if (formData.brochure_option === 'new') {
+  } else if (formData.brochure_option === 'rental') {
     orderItems.push({
-      description: 'Brochure Box (New)',
-      price: PRICING.brochure_box_new,
+      description: 'Brochure Box Rental',
+      price: PRICING.brochure_box_rental,
     })
   }
 
@@ -218,14 +218,14 @@ export function ReviewStep({
           total_price: PRICING.brochure_box_install,
           customer_brochure_box_id: formData.customer_brochure_box_id,
         })
-      } else if (formData.brochure_option === 'new') {
+      } else if (formData.brochure_option === 'rental') {
         items.push({
           item_type: 'brochure_box',
-          item_category: 'new',
-          description: 'Brochure Box (New)',
+          item_category: 'rental',
+          description: 'Brochure Box Rental',
           quantity: 1,
-          unit_price: PRICING.brochure_box_new,
-          total_price: PRICING.brochure_box_new,
+          unit_price: PRICING.brochure_box_rental,
+          total_price: PRICING.brochure_box_rental,
         })
       }
 

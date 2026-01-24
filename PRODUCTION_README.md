@@ -239,6 +239,13 @@ The order wizard guides customers through 9 steps:
 | GET | `/api/profile` | Get user profile |
 | PUT | `/api/profile` | Update user profile |
 
+### Notifications
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/notifications` | Get user notifications (with unread count) |
+| PUT | `/api/notifications` | Mark notifications as read |
+
 ### Payments
 
 | Method | Endpoint | Description |
@@ -286,13 +293,13 @@ The order wizard guides customers through 9 steps:
 | **Lockboxes** | |
 | Install SentriLock (customer's) | $5 |
 | Install Mechanical (customer's) | $5 |
-| Rent Mechanical | $15 |
+| Rent Mechanical | $10 |
 | **Brochure Box** | |
-| New brochure box | $23 |
-| Install from storage | $2 |
+| Rent brochure box | $5 |
+| Install from storage | $3 |
 | **Fees** | |
 | Fuel Surcharge (all orders) | $2.47 |
-| Expedite Fee (same day) | $25 |
+| Expedite Fee (same day) | $50 |
 
 ---
 
@@ -451,11 +458,48 @@ WHERE email = 'user@example.com';
 | `lib/stripe/server.ts` | Stripe server-side utilities |
 | `lib/stripe/client.ts` | Stripe client-side loader |
 | `lib/email.ts` | Email templates and sending |
+| `lib/notifications.ts` | In-app notification helpers |
 | `lib/validations.ts` | Zod validation schemas |
 
 ---
 
 ## Changelog
+
+### v2.9.0 (Client Spec Updates & Notifications)
+
+- **New:** Notification system for users
+  - Bell icon dropdown in dashboard header
+  - Notifications for: order status changes, service request updates, welcome message
+  - Mark as read (individual or all)
+  - Auto-polls every 30 seconds
+  - **Requires migration:** `npx prisma db push` to create `notifications` table
+- **New:** Order form questions (per client spec)
+  - "Is the property in a gated community?" (Yes/No + gate code field)
+  - "Did you leave a marker where you want the post placed?" (Yes/No)
+  - "How should the sign be placed relative to the street?" (Perpendicular, Parallel, Corner Angle, Let Installer Decide, Other)
+- **Updated:** Dashboard now fetches real data from API
+  - New users see empty state with CTA instead of mock data
+  - Stats calculated from actual orders and installations
+- **Updated:** Logo navigation
+  - Links to `/dashboard` when user is on dashboard/admin pages
+  - Links to `/` (home) on marketing pages
+- **Updated:** Pricing changes per client spec
+  - Expedite fee: $25 → $50 (same day or next day after 4pm)
+  - Lockbox rental: $15 → $10
+  - Brochure box install: $2 → $3
+  - Brochure box rental: NEW $5 option (replaces "buy new" option)
+- **Removed:** Replacement charges from Post Options cards
+  - Only shows "Installation & Pickup" price now
+  - Fees will be in terms & conditions instead
+- **Fixed:** Admin orders API returning wrong field names (camelCase vs snake_case)
+- **Fixed:** Missing PUT handler for order status updates
+
+### v2.8.0 (Branding Updates)
+
+- **New:** Pink bird mascot logo replaces CSS-styled logo
+- **Updated:** Logo component uses Next.js Image component
+- **Updated:** Marketing header logo size increased (56x56, h-20 navbar)
+- **Updated:** Documentation with branding changes
 
 ### v2.7.0 (Service Requests & Installation Actions)
 

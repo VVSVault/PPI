@@ -49,31 +49,31 @@ export function BrochureBoxStep({ formData, updateFormData, inventory }: StepPro
           </button>
         )}
 
-        {/* New brochure box */}
+        {/* Rent brochure box */}
         <button
           type="button"
-          onClick={() => updateFormData({ brochure_option: 'new' })}
+          onClick={() => updateFormData({ brochure_option: 'rental' })}
           className={cn(
             'w-full flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left',
-            formData.brochure_option === 'new'
+            formData.brochure_option === 'rental'
               ? 'border-pink-500 bg-pink-50'
               : 'border-gray-200 hover:border-gray-300'
           )}
         >
           <div className={cn(
             'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center',
-            formData.brochure_option === 'new' ? 'bg-pink-500' : 'bg-gray-100'
+            formData.brochure_option === 'rental' ? 'bg-pink-500' : 'bg-gray-100'
           )}>
             <ShoppingCart className={cn(
               'w-5 h-5',
-              formData.brochure_option === 'new' ? 'text-white' : 'text-gray-400'
+              formData.brochure_option === 'rental' ? 'text-white' : 'text-gray-400'
             )} />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900">New brochure box</h3>
-            <p className="text-sm text-gray-600">Purchase a new brochure box with installation</p>
+            <h3 className="font-semibold text-gray-900">Rent a brochure box</h3>
+            <p className="text-sm text-gray-600">We provide a brochure box with your installation</p>
             <p className="text-sm font-medium text-pink-600 mt-1">
-              ${PRICING.brochure_box_new.toFixed(2)}
+              ${PRICING.brochure_box_rental.toFixed(2)} rental fee
             </p>
           </div>
         </button>

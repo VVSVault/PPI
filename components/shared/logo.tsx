@@ -1,14 +1,24 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 interface LogoProps {
   variant?: 'light' | 'dark'
   size?: 'sm' | 'md' | 'lg'
   className?: string
+  href?: string
 }
 
-const Logo = ({ variant = 'dark', size = 'md', className }: LogoProps) => {
+const Logo = ({ variant = 'dark', size = 'md', className, href }: LogoProps) => {
+  const pathname = usePathname()
+
+  // If on dashboard or admin pages, link to dashboard; otherwise link to home
+  const isInApp = pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin')
+  const linkHref = href ?? (isInApp ? '/dashboard' : '/')
+
   const imageSizes = {
     sm: { width: 32, height: 32 },
     md: { width: 40, height: 40 },
@@ -27,7 +37,7 @@ const Logo = ({ variant = 'dark', size = 'md', className }: LogoProps) => {
   }
 
   return (
-    <Link href="/" className={cn('flex items-center gap-2', className)}>
+    <Link href={linkHref} className={cn('flex items-center gap-2', className)}>
       {/* Logo Image */}
       <Image
         src="/images/logo.png"

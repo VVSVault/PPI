@@ -44,14 +44,32 @@ export async function GET(request: NextRequest) {
       skip: offset,
     })
 
-    // Transform to match expected format
+    // Transform to match expected format (snake_case for frontend)
     const transformedOrders = orders.map((order) => ({
-      ...order,
+      id: order.id,
+      order_number: order.orderNumber,
+      status: order.status,
+      payment_status: order.paymentStatus,
+      property_address: order.propertyAddress,
+      property_city: order.propertyCity,
+      property_state: order.propertyState,
+      property_zip: order.propertyZip,
+      total: Number(order.total),
+      created_at: order.createdAt.toISOString(),
+      scheduled_date: order.scheduledDate?.toISOString() || null,
+      is_expedited: order.isExpedited,
       profiles: {
         full_name: order.user.fullName,
         email: order.user.email,
         phone: order.user.phone,
       },
+      order_items: order.orderItems.map((item) => ({
+        id: item.id,
+        item_type: item.itemType,
+        description: item.description,
+        quantity: item.quantity,
+        total_price: Number(item.totalPrice),
+      })),
     }))
 
     return NextResponse.json({ orders: transformedOrders })

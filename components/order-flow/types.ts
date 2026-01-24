@@ -19,6 +19,13 @@ export interface OrderFormData {
   installation_location_image?: string // base64 encoded image
   installation_notes: string
 
+  // Additional Property Questions
+  is_gated_community: boolean
+  gate_code?: string
+  has_marker_placed: boolean
+  sign_orientation: 'perpendicular' | 'parallel' | 'corner' | 'installer_decides' | 'other'
+  sign_orientation_other?: string
+
   // Post Selection
   post_type: 'white-vinyl' | 'black-vinyl' | 'pink-vinyl' | undefined
 
@@ -37,7 +44,7 @@ export interface OrderFormData {
   customer_lockbox_id?: string
 
   // Brochure Box
-  brochure_option: 'stored' | 'new' | 'none'
+  brochure_option: 'stored' | 'rental' | 'none'
   customer_brochure_box_id?: string
 
   // Scheduling
@@ -78,9 +85,9 @@ export const PRICING = {
   rider_rental: 5,
   rider_install: 2,
   lockbox_install: 5,
-  lockbox_rental: 15,
-  brochure_box_new: 23,
-  brochure_box_install: 2,
+  lockbox_rental: 10,
+  brochure_box_rental: 5,
+  brochure_box_install: 3,
   fuel_surcharge: 2.47,
-  expedite_fee: 25,
+  expedite_fee: 50,
 } as const

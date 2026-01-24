@@ -7,8 +7,6 @@ interface PostCardProps {
   slug: string
   description: string
   installationFee: number
-  reinstallFee: number
-  replacementFee: number
   imageUrl?: string
   featured?: boolean
   onSelect?: () => void
@@ -18,8 +16,6 @@ const PostCard = ({
   name,
   description,
   installationFee,
-  reinstallFee,
-  replacementFee,
   imageUrl,
   featured,
   onSelect,
@@ -62,20 +58,9 @@ const PostCard = ({
         {/* Pricing */}
         <div className="mt-4 space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-gray-500">Installation</span>
+            <span className="text-gray-500">Installation & Pickup</span>
             <span className="font-semibold text-gray-900">${installationFee}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Reinstallation*</span>
-            <span className="font-semibold text-green-600">FREE</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Replacement</span>
-            <span className="font-semibold text-gray-900">${replacementFee}</span>
-          </div>
-          <p className="text-xs text-gray-400 mt-2">
-            *FREE if caused by weather or other natural causes
-          </p>
         </div>
 
         <Button

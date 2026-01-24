@@ -34,6 +34,12 @@ const initialFormData: OrderFormData = {
   property_zip: '',
   installation_location: '',
   installation_notes: '',
+  // Additional Property Questions
+  is_gated_community: false,
+  gate_code: '',
+  has_marker_placed: false,
+  sign_orientation: 'installer_decides',
+  sign_orientation_other: '',
   // Post
   post_type: undefined,
   // Sign
@@ -96,11 +102,16 @@ export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
     const step = steps[currentStep]
     switch (step.id) {
       case 'property':
+        const gateCodeValid = !formData.is_gated_community || formData.gate_code
+        const orientationValid = formData.sign_orientation !== 'other' || formData.sign_orientation_other
         return (
           formData.property_type &&
           formData.property_address &&
           formData.property_city &&
-          formData.property_zip
+          formData.property_zip &&
+          formData.sign_orientation &&
+          gateCodeValid &&
+          orientationValid
         )
       case 'post':
         return !!formData.post_type

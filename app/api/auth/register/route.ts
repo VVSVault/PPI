@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { createWelcomeNotification } from '@/lib/notifications'
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,6 +42,13 @@ export async function POST(request: NextRequest) {
         role: 'customer',
       },
     })
+
+    // Create welcome notification
+    try {
+      await createWelcomeNotification(user.id, fullName)
+    } catch (notifError) {
+      console.error('Error creating welcome notification:', notifError)
+    }
 
     return NextResponse.json({
       user: {

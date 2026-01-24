@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth-utils'
+import { createServiceRequestNotification } from '@/lib/notifications'
 
 export async function GET(
   request: NextRequest,
@@ -146,6 +147,17 @@ export async function PUT(
           removedAt: new Date(),
         },
       })
+    }
+
+    // Create notification for status change
+    const notifiableStatuses = ['acknowledged', 'scheduled', 'completed']
+    if (status && notifiableStatuses.includes(status)) {
+      try {
+        const address = `${updated.installation.propertyAddress}, ${updated.installation.propertyCity}`
+        await createServiceRequestNotification(updated.userId, address, status)
+      } catch (notifError) {
+        console.error('Error creating notification:', notifError)
+      }
     }
 
     return NextResponse.json({ serviceRequest: updated })

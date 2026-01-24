@@ -1,87 +1,90 @@
 'use client'
 
-import { MapPin, Calendar, Clock, DollarSign } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { MapPin, Calendar, Clock, DollarSign, Package } from 'lucide-react'
 import { Header, StatsCards, ActivePostsTable } from '@/components/dashboard'
 import type { Installation } from '@/components/dashboard/active-posts-table'
-
-// Mock data - replace with real data from Supabase
-const mockStats = [
-  {
-    label: 'Active Posts',
-    value: 12,
-    icon: MapPin,
-    trend: { value: 8, isPositive: true },
-  },
-  {
-    label: 'Pending Orders',
-    value: 3,
-    icon: Clock,
-  },
-  {
-    label: 'Scheduled Removals',
-    value: 2,
-    icon: Calendar,
-  },
-  {
-    label: 'This Month',
-    value: '$847',
-    icon: DollarSign,
-    trend: { value: 12, isPositive: true },
-  },
-]
-
-const mockInstallations: Installation[] = [
-  {
-    id: '1',
-    installDate: '2025-11-20',
-    address: '1245 Richmond Rd',
-    city: 'Lexington',
-    state: 'KY',
-    zip: '40502',
-    agentRef: 'RR-001',
-    mlsNumber: '12345',
-    status: 'active',
-    postType: 'white',
-  },
-  {
-    id: '2',
-    installDate: '2025-11-18',
-    address: '890 Tates Creek Rd',
-    city: 'Lexington',
-    state: 'KY',
-    zip: '40517',
-    agentRef: 'RR-002',
-    mlsNumber: '12346',
-    status: 'active',
-    postType: 'black',
-  },
-  {
-    id: '3',
-    installDate: '2025-11-15',
-    address: '456 Man O War Blvd',
-    city: 'Lexington',
-    state: 'KY',
-    zip: '40509',
-    agentRef: 'RR-003',
-    mlsNumber: '12347',
-    status: 'removal_scheduled',
-    postType: 'pink',
-  },
-  {
-    id: '4',
-    installDate: '2025-11-25',
-    address: '789 Nicholasville Rd',
-    city: 'Lexington',
-    state: 'KY',
-    zip: '40503',
-    agentRef: 'RR-004',
-    mlsNumber: '12348',
-    status: 'scheduled',
-    postType: 'white',
-  },
-]
+import Link from 'next/link'
+import { Button } from '@/components/ui'
 
 export default function DashboardPage() {
+  const [installations, setInstallations] = useState<Installation[]>([])
+  const [orders, setOrders] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [installRes, ordersRes] = await Promise.all([
+          fetch('/api/installations'),
+          fetch('/api/orders'),
+        ])
+
+        if (installRes.ok) {
+          const installData = await installRes.json()
+          // Transform API data to match Installation interface
+          const transformed = installData.installations.map((inst: any) => ({
+            id: inst.id,
+            installDate: inst.installedAt,
+            address: inst.propertyAddress,
+            city: inst.propertyCity,
+            state: inst.propertyState,
+            zip: inst.propertyZip,
+            status: inst.status,
+            postType: 'white', // Default, could be from order
+          }))
+          setInstallations(transformed)
+        }
+
+        if (ordersRes.ok) {
+          const ordersData = await ordersRes.json()
+          setOrders(ordersData.orders || [])
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  // Calculate stats from real data
+  const activeCount = installations.filter((i) => i.status === 'active').length
+  const pendingOrders = orders.filter((o) => o.status === 'pending' || o.status === 'confirmed').length
+  const scheduledRemovals = installations.filter((i) => i.status === 'removal_scheduled').length
+  const thisMonthSpend = orders
+    .filter((o) => {
+      const orderDate = new Date(o.createdAt)
+      const now = new Date()
+      return orderDate.getMonth() === now.getMonth() && orderDate.getFullYear() === now.getFullYear()
+    })
+    .reduce((sum, o) => sum + Number(o.total || 0), 0)
+
+  const stats = [
+    {
+      label: 'Active Posts',
+      value: activeCount,
+      icon: MapPin,
+    },
+    {
+      label: 'Pending Orders',
+      value: pendingOrders,
+      icon: Clock,
+    },
+    {
+      label: 'Scheduled Removals',
+      value: scheduledRemovals,
+      icon: Calendar,
+    },
+    {
+      label: 'This Month',
+      value: `$${thisMonthSpend.toFixed(0)}`,
+      icon: DollarSign,
+    },
+  ]
+
   return (
     <div>
       <Header
@@ -94,7 +97,7 @@ export default function DashboardPage() {
 
       <div className="p-4 lg:p-6 space-y-6">
         {/* Stats Cards */}
-        <StatsCards stats={mockStats} />
+        <StatsCards stats={stats} />
 
         {/* Active Installations */}
         <div>
@@ -102,13 +105,33 @@ export default function DashboardPage() {
             <h2 className="text-lg font-semibold text-gray-900">
               Active Installations
             </h2>
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
-            />
+            {installations.length > 0 && (
+              <input
+                type="text"
+                placeholder="Search..."
+                className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+              />
+            )}
           </div>
-          <ActivePostsTable installations={mockInstallations} />
+
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : installations.length === 0 ? (
+            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+              <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Active Installations</h3>
+              <p className="text-gray-500 mb-6">
+                You don&apos;t have any active sign installations yet. Place your first order to get started!
+              </p>
+              <Link href="/dashboard/place-order">
+                <Button>Place Your First Order</Button>
+              </Link>
+            </div>
+          ) : (
+            <ActivePostsTable installations={installations} />
+          )}
         </div>
       </div>
     </div>

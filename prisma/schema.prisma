@@ -97,6 +97,7 @@ model User {
   customerBrochureBoxes CustomerBrochureBox[]
   paymentMethods  PaymentMethod[]
   serviceRequests ServiceRequest[]
+  notifications   Notification[]
 
   @@map("users")
 }
@@ -104,6 +105,40 @@ model User {
 enum UserRole {
   customer
   admin
+}
+
+// ============================================
+// Notifications
+// ============================================
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String           @map("user_id")
+  type        NotificationType
+  title       String
+  message     String
+  link        String?          // Optional link to relevant page
+  isRead      Boolean          @default(false) @map("is_read")
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  order_confirmed
+  order_scheduled
+  order_in_progress
+  order_completed
+  order_cancelled
+  service_request_acknowledged
+  service_request_scheduled
+  service_request_completed
+  removal_reminder
+  welcome
 }
 
 // ============================================

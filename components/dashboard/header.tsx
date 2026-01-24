@@ -1,8 +1,9 @@
 'use client'
 
-import { Bell, User } from 'lucide-react'
+import { User } from 'lucide-react'
 import { Button } from '@/components/ui'
 import Link from 'next/link'
+import { NotificationDropdown } from './notification-dropdown'
 
 interface HeaderProps {
   title: string
@@ -30,10 +31,7 @@ const Header = ({ title, action }: HeaderProps) => {
           )}
 
           {/* Notifications */}
-          <button className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-pink-500 rounded-full" />
-          </button>
+          <NotificationDropdown />
 
           {/* User Menu */}
           <Link href="/dashboard/profile">
