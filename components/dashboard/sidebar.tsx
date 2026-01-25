@@ -111,7 +111,7 @@ const Sidebar = () => {
     <>
       {/* Logo */}
       <div className="p-6 border-b border-pink-200">
-        <Logo variant="dark" size="md" />
+        <Logo variant="dark" size="md" href="/" />
       </div>
 
       {/* Navigation */}

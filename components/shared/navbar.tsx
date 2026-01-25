@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import { Menu, X } from 'lucide-react'
 import { Logo } from './logo'
 import { Button } from '@/components/ui'
@@ -14,6 +15,8 @@ const navLinks = [
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { status } = useSession()
+  const isAuthenticated = status === 'authenticated'
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
@@ -37,12 +40,20 @@ const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/sign-in">
-              <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link href="/sign-up">
-              <Button variant="primary">Get Started</Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link href="/dashboard">
+                <Button variant="primary">Dashboard</Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/sign-in">
+                  <Button variant="ghost">Sign In</Button>
+                </Link>
+                <Link href="/sign-up">
+                  <Button variant="primary">Get Started</Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -77,12 +88,20 @@ const Navbar = () => {
               </Link>
             ))}
             <hr className="border-gray-200 my-2" />
-            <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
-              <Button variant="ghost" className="w-full">Sign In</Button>
-            </Link>
-            <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
-              <Button variant="primary" className="w-full">Get Started</Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="primary" className="w-full">Dashboard</Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full">Sign In</Button>
+                </Link>
+                <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button variant="primary" className="w-full">Get Started</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
