@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth-utils'
 import { sendInstallationCompleteEmail } from '@/lib/email'
 import { createOrderNotification } from '@/lib/notifications'
+import { chargePaymentMethod } from '@/lib/stripe'
 
 export async function GET(
   request: NextRequest,
@@ -72,7 +73,15 @@ export async function PUT(
       where: { id },
       data: { status },
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            fullName: true,
+            stripeCustomerId: true,
+          },
+        },
         orderItems: true,
       },
     })
@@ -91,8 +100,62 @@ export async function PUT(
       }
     }
 
-    // If order is completed, create installation record and notify customer
+    // If order is completed, charge customer and create installation record
     if (status === 'completed') {
+      // Attempt to charge customer's saved payment method
+      if (order.paymentStatus !== 'succeeded') {
+        try {
+          // Get customer's default payment method
+          const defaultPaymentMethod = await prisma.paymentMethod.findFirst({
+            where: {
+              userId: order.userId,
+              isDefault: true,
+            },
+          })
+
+          if (defaultPaymentMethod && order.user.stripeCustomerId) {
+            // Convert total to cents for Stripe
+            const amountInCents = Math.round(Number(order.total) * 100)
+
+            // Charge the payment method
+            const paymentIntent = await chargePaymentMethod(
+              order.user.stripeCustomerId,
+              defaultPaymentMethod.stripePaymentMethodId,
+              amountInCents,
+              `Order ${order.orderNumber} - ${order.propertyAddress}`,
+              {
+                orderId: order.id,
+                orderNumber: order.orderNumber,
+              }
+            )
+
+            // Update order with payment info
+            await prisma.order.update({
+              where: { id },
+              data: {
+                paymentStatus: 'succeeded',
+                paymentIntentId: paymentIntent.id,
+                paidAt: new Date(),
+              },
+            })
+
+            console.log(`Payment successful for order ${order.orderNumber}: ${paymentIntent.id}`)
+          } else {
+            console.log(`No payment method for order ${order.orderNumber}, skipping charge`)
+          }
+        } catch (paymentError: any) {
+          console.error('Payment failed for order:', order.orderNumber, paymentError)
+
+          // Update payment status to failed but don't block order completion
+          await prisma.order.update({
+            where: { id },
+            data: {
+              paymentStatus: 'failed',
+            },
+          })
+        }
+      }
+
       // Check if installation already exists
       const existingInstallation = await prisma.installation.findUnique({
         where: { orderId: id },
