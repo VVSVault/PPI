@@ -99,7 +99,7 @@ export async function PUT(
       })
 
       if (!existingInstallation) {
-        await prisma.installation.create({
+        const installation = await prisma.installation.create({
           data: {
             orderId: order.id,
             userId: order.userId,
@@ -110,6 +110,88 @@ export async function PUT(
             status: 'active',
           },
         })
+
+        // Create InstallationRider and InstallationLockbox records from order items
+        for (const item of order.orderItems) {
+          // Handle riders
+          if (item.itemType === 'rider') {
+            const isRental = item.itemCategory === 'rental'
+            let riderId = item.riderId
+
+            // If no direct riderId, try to get it from customer's rider
+            if (!riderId && item.customerRiderId) {
+              const customerRider = await prisma.customerRider.findUnique({
+                where: { id: item.customerRiderId },
+              })
+              riderId = customerRider?.riderId || null
+            }
+
+            if (riderId) {
+              await prisma.installationRider.create({
+                data: {
+                  installationId: installation.id,
+                  riderId,
+                  isRental,
+                },
+              })
+
+              // Update customer's rider status if from storage
+              if (item.customerRiderId && item.itemCategory === 'storage') {
+                await prisma.customerRider.update({
+                  where: { id: item.customerRiderId },
+                  data: { inStorage: false },
+                })
+              }
+            }
+          }
+
+          // Handle lockboxes
+          if (item.itemType === 'lockbox') {
+            const isRental = item.itemCategory === 'rental'
+            let lockboxTypeId: string | null = null
+            let code: string | null = null
+
+            // Get lockbox type from customer's lockbox
+            if (item.customerLockboxId) {
+              const customerLockbox = await prisma.customerLockbox.findUnique({
+                where: { id: item.customerLockboxId },
+              })
+              lockboxTypeId = customerLockbox?.lockboxTypeId || null
+              code = customerLockbox?.code || null
+
+              // Update customer's lockbox status if from storage
+              if (item.itemCategory === 'storage') {
+                await prisma.customerLockbox.update({
+                  where: { id: item.customerLockboxId },
+                  data: { inStorage: false },
+                })
+              }
+            } else {
+              // For new/rental lockboxes, try to find the lockbox type by name in description
+              const lockboxType = await prisma.lockboxType.findFirst({
+                where: {
+                  OR: [
+                    { name: { contains: 'SentriLock', mode: 'insensitive' } },
+                    { name: { contains: 'Supra', mode: 'insensitive' } },
+                  ],
+                  isActive: true,
+                },
+              })
+              lockboxTypeId = lockboxType?.id || null
+            }
+
+            if (lockboxTypeId) {
+              await prisma.installationLockbox.create({
+                data: {
+                  installationId: installation.id,
+                  lockboxTypeId,
+                  isRental,
+                  code,
+                },
+              })
+            }
+          }
+        }
 
         // Send completion email to customer
         try {

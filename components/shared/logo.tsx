@@ -40,7 +40,7 @@ const Logo = ({ variant = 'dark', size = 'md', className, href }: LogoProps) => 
     <Link href={linkHref} className={cn('flex items-center gap-2', className)}>
       {/* Logo Image */}
       <Image
-        src="/images/logo.png"
+        src="/images/logo.svg"
         alt="Pink Post Installations"
         width={imageSizes[size].width}
         height={imageSizes[size].height}

@@ -16,6 +16,7 @@ import {
   LogOut,
   Menu,
   X,
+  Wrench,
 } from 'lucide-react'
 import { Logo } from '@/components/shared'
 import { cn } from '@/lib/utils'
@@ -55,6 +56,11 @@ const orderNavItems = [
     icon: History,
   },
   {
+    label: 'Service Requests',
+    href: '/dashboard/service-requests',
+    icon: Wrench,
+  },
+  {
     label: 'Billing',
     href: '/dashboard/billing',
     icon: Receipt,
@@ -92,7 +98,7 @@ const Sidebar = () => {
           'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all',
           isActive
             ? 'bg-pink-500 text-white'
-            : 'text-pink-100 hover:bg-pink-500/50 hover:text-white'
+            : 'text-gray-700 hover:bg-pink-200 hover:text-pink-900'
         )}
       >
         <Icon className="w-5 h-5" />
@@ -104,8 +110,8 @@ const Sidebar = () => {
   const SidebarContent = () => (
     <>
       {/* Logo */}
-      <div className="p-6 border-b border-pink-500/30">
-        <Logo variant="light" size="md" />
+      <div className="p-6 border-b border-pink-200">
+        <Logo variant="dark" size="md" />
       </div>
 
       {/* Navigation */}
@@ -118,7 +124,7 @@ const Sidebar = () => {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-pink-500/30" />
+        <div className="border-t border-pink-200" />
 
         {/* Orders */}
         <div className="space-y-1">
@@ -128,7 +134,7 @@ const Sidebar = () => {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-pink-500/30" />
+        <div className="border-t border-pink-200" />
 
         {/* Account */}
         <div className="space-y-1">
@@ -139,10 +145,10 @@ const Sidebar = () => {
       </nav>
 
       {/* Logout */}
-      <div className="p-4 border-t border-pink-500/30">
+      <div className="p-4 border-t border-pink-200">
         <button
           onClick={() => signOut({ callbackUrl: '/sign-in' })}
-          className="flex items-center gap-3 px-4 py-2.5 w-full rounded-lg text-sm font-medium text-pink-100 hover:bg-pink-500/50 hover:text-white transition-all"
+          className="flex items-center gap-3 px-4 py-2.5 w-full rounded-lg text-sm font-medium text-gray-700 hover:bg-pink-200 hover:text-pink-900 transition-all"
         >
           <LogOut className="w-5 h-5" />
           Sign Out
@@ -156,7 +162,7 @@ const Sidebar = () => {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-pink-600 text-white rounded-lg shadow-lg"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-pink-500 text-white rounded-lg shadow-lg"
       >
         <Menu className="w-6 h-6" />
       </button>
@@ -172,13 +178,13 @@ const Sidebar = () => {
       {/* Mobile Sidebar */}
       <aside
         className={cn(
-          'lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-pink-600 flex flex-col transition-transform duration-300',
+          'lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-pink-50 flex flex-col transition-transform duration-300 border-r border-pink-200',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <button
           onClick={() => setIsMobileOpen(false)}
-          className="absolute top-4 right-4 p-2 text-white hover:bg-pink-500 rounded-lg"
+          className="absolute top-4 right-4 p-2 text-gray-600 hover:bg-pink-200 rounded-lg"
         >
           <X className="w-5 h-5" />
         </button>
@@ -186,7 +192,7 @@ const Sidebar = () => {
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-pink-600">
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-pink-50 border-r border-pink-200">
         <SidebarContent />
       </aside>
     </>

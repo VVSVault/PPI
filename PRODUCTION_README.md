@@ -685,6 +685,39 @@ WHERE email = 'user@example.com';
 
 ---
 
+## Known Gaps (Must Fix Before Production)
+
+### 1. Order History Uses Mock Data
+**File:** `app/dashboard/order-history/page.tsx`
+- Currently displays hardcoded sample data
+- Needs to fetch from `/api/orders` endpoint
+
+### 2. Missing Order Details Page
+**Missing:** `app/dashboard/orders/[id]/page.tsx`
+- Notifications link to this non-existent page
+- Customers clicking order notifications get 404
+
+### 3. Installation Items Not Created
+**File:** `app/api/orders/[id]/route.ts`
+- When order → completed, creates Installation record
+- Does NOT create InstallationRider/InstallationLockbox records
+- Customer inventory not updated (in_storage → in_use)
+
+### 4. No Customer Service Requests Page
+**Missing:** `app/dashboard/service-requests/page.tsx`
+- Customers can only view requests via Installation Details modal
+- No dedicated page to see all their service requests
+
+### Medium Priority Issues
+| Issue | Description |
+|-------|-------------|
+| No status validation | Orders can transition to any status |
+| Payment failure handling | No notification on Stripe payment failure |
+| No scheduling UI | Admin can't set scheduledDate after order creation |
+| Expedited orders | Not highlighted in admin order list |
+
+---
+
 ## Support
 
 For issues or questions:

@@ -20,11 +20,61 @@ This document covers all development progress, bug fixes, and deployment configu
 6. [API Endpoints](#api-endpoints)
 7. [Component Updates](#component-updates)
 8. [Authentication](#authentication)
-9. [Troubleshooting](#troubleshooting)
+9. [Known Gaps & Required Fixes](#known-gaps--required-fixes)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## New Features
+
+### v2.9.2 - Critical Fixes & UI Refresh
+
+#### Critical Gap Fixes
+All 4 critical issues identified in v2.9.1 have been resolved:
+
+1. **Order History Page** (`app/dashboard/order-history/page.tsx`)
+   - Replaced mock data with real API calls to `/api/orders`
+   - Added loading and error states
+   - Implemented pagination support
+
+2. **Order Details Page** (`app/dashboard/orders/[id]/page.tsx`) - NEW
+   - Created customer-facing order details page
+   - Visual status timeline showing order progress
+   - Full order details with items, pricing, and payment status
+   - Fixes broken notification links
+
+3. **Installation Item Creation** (`app/api/orders/[id]/route.ts`)
+   - When orders complete, now creates `InstallationRider` records
+   - Creates `InstallationLockbox` records from order items
+   - Updates customer inventory status (inStorage → false)
+
+4. **Customer Service Requests** - NEW
+   - API: `app/api/service-requests/route.ts`
+   - Page: `app/dashboard/service-requests/page.tsx`
+   - Summary cards with status counts
+   - Filterable tabs (All, Active, Completed)
+   - Added to sidebar navigation with Wrench icon
+
+#### UI Updates - Logo & Sidebar Redesign
+
+**New Logo:**
+- Updated to pink bird mascot SVG logo
+- Files: `public/images/logo.svg`, `app/icon.svg` (favicon)
+- Automatically used in navbar, sidebar, and favicon
+
+**Dashboard Sidebar Color Change:**
+- Background: `bg-pink-600` → `bg-pink-50` (light pink)
+- Text: `text-pink-100` → `text-gray-700` (dark text)
+- Borders: `border-pink-500/30` → `border-pink-200`
+- Active state: Remains `bg-pink-500 text-white`
+- Hover state: `hover:bg-pink-200 hover:text-pink-900`
+- Logo variant: `light` → `dark` for visibility
+
+**Files Modified:**
+- `components/shared/logo.tsx` - Updated to use SVG
+- `components/dashboard/sidebar.tsx` - Light pink theme
+
+---
 
 ### v2.9.1 - Security Hardening
 
@@ -669,6 +719,82 @@ Creates:
 
 ---
 
+## Known Gaps & Required Fixes
+
+### Critical Issues - RESOLVED ✅
+
+All 4 critical issues identified in v2.9.1 have been fixed:
+
+#### ✅ 1. Order History Page - FIXED
+**File:** `app/dashboard/order-history/page.tsx`
+
+**Resolution:** Page now fetches real orders from `/api/orders` endpoint with:
+- Loading and error states
+- Pagination support
+- Transformation of API data to table format
+
+---
+
+#### ✅ 2. Customer Order Details Page - FIXED
+**File:** `app/dashboard/orders/[id]/page.tsx`
+
+**Resolution:** Created new page with:
+- Order status with visual timeline
+- Full order details (address, post type, schedule)
+- Order items breakdown with pricing
+- Payment status display
+- Links to related actions
+
+---
+
+#### ✅ 3. Installation Items on Order Completion - FIXED
+**File:** `app/api/orders/[id]/route.ts`
+
+**Resolution:** When order status changes to `completed`, the system now:
+- Creates `InstallationRider` records for rider items
+- Creates `InstallationLockbox` records for lockbox items
+- Updates customer inventory status (inStorage → false)
+- Handles both customer-owned and rental items
+
+---
+
+#### ✅ 4. Customer Service Requests Page - FIXED
+**Files:**
+- `app/api/service-requests/route.ts` (new)
+- `app/dashboard/service-requests/page.tsx` (new)
+
+**Resolution:** Created customer service requests system with:
+- API endpoint for customers to fetch their requests
+- Dedicated page with status summary cards
+- Filterable tabs (All, Active, Completed)
+- Request details with admin notes
+
+---
+
+### Medium Priority - Should Fix
+
+| Issue | Description | Impact |
+|-------|-------------|--------|
+| **No Order Status Validation** | Orders can transition to any status (e.g., completed → pending) | Admin could accidentally revert completed orders |
+| **Payment Failure Not Handled** | Stripe webhook handles `payment_intent.succeeded` but not `payment_intent.failed` | Customers not notified of failed payments |
+| **No Admin Scheduling UI** | Orders have `scheduledDate` field but no UI to set it after creation | Admin can't record when installation is scheduled |
+| **Expedited Orders Not Highlighted** | Admin can't easily identify expedited orders in the list | Expedited orders may be missed |
+| **No Customer Cancel for Service Requests** | Customers can't cancel their own pending service requests | Poor UX for customers who change their minds |
+
+---
+
+### API Endpoints Status
+
+| Endpoint | Status | Notes |
+|----------|--------|-------|
+| `GET /api/orders` | ✅ Working | Used by Order History page |
+| `GET /api/orders/[id]` | ✅ Working | Used by Order Details page |
+| `GET /api/service-requests` | ✅ Working | Customer service requests endpoint |
+| `/dashboard/orders/[id]` | ✅ Working | Order details page for customers |
+| `/dashboard/service-requests` | ✅ Working | Service requests page for customers |
+
+---
+
 ## Troubleshooting
 
 ### Bad Gateway on Railway
@@ -722,14 +848,30 @@ Creates:
 
 ## Next Steps
 
-1. **Database migrations are current** - PasswordResetToken, ServiceRequest, and Notification tables deployed
-2. **Update admin credentials** after first login
-3. **Configure Stripe webhooks** for payment processing
-4. **Test password reset flow** end-to-end
-5. **Test mobile responsiveness** on various devices
-6. **Security testing** - Verify rate limiting and account lockout work as expected
+### Critical Fixes - COMPLETED ✅
+1. ~~**Wire up Order History page**~~ - ✅ Done
+2. ~~**Create Order Details page**~~ - ✅ Done
+3. ~~**Fix Installation item creation**~~ - ✅ Done
+4. ~~**Create Service Requests page**~~ - ✅ Done
+
+### Configuration Tasks
+5. **Update admin credentials** after first login
+6. **Configure Stripe webhooks** for payment processing
+7. **Test password reset flow** end-to-end
+
+### Testing
+8. **Test mobile responsiveness** on various devices
+9. **Security testing** - Verify rate limiting and account lockout work as expected
+10. **End-to-end order flow testing** - Place order → admin updates → customer notifications
+
+### Medium Priority Fixes (Post-Launch)
+11. Add order status validation to prevent invalid transitions
+12. Handle `payment_intent.failed` webhook event
+13. Add admin UI for scheduling orders
+14. Highlight expedited orders in admin list
+15. Allow customers to cancel pending service requests
 
 ---
 
 *Last Updated: January 2025*
-*Version: 2.9.1*
+*Version: 2.9.2*
