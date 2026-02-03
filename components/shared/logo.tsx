@@ -41,7 +41,7 @@ const Logo = ({ variant = 'dark', size = 'md', className, href }: LogoProps) => 
       {/* Logo Image */}
       <Image
         src="/images/logo.svg"
-        alt="Pink Post Installations"
+        alt="Pink Posts Installations"
         width={imageSizes[size].width}
         height={imageSizes[size].height}
         className="object-contain"
@@ -50,7 +50,7 @@ const Logo = ({ variant = 'dark', size = 'md', className, href }: LogoProps) => 
       {/* Logo Text */}
       <div className={cn('font-semibold', textSizes[size], colors[variant])}>
         <span>Pink</span>
-        <span className="text-pink-500">Post</span>
+        <span className="text-pink-500">Posts</span>
       </div>
     </Link>
   )

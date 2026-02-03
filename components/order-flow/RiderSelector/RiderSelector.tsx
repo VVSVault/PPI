@@ -7,12 +7,12 @@ import {
   RiderSourceToggle,
   PopularRiders,
   RiderCategoryAccordion,
-  AcresInput,
+  CustomRiderInput,
   SelectedRidersList,
 } from './components'
 import { useRiderSelection } from './hooks/useRiderSelection'
 import { RIDER_CATEGORIES, RIDERS, getRidersByCategory, RIDER_PRICING } from './constants'
-import type { RiderSelectorProps, RiderCategory } from './types'
+import type { RiderSelectorProps } from './types'
 
 export function RiderSelector({
   selectedRiders: externalRiders,
@@ -52,12 +52,10 @@ export function RiderSelector({
   const price = getRiderPrice()
   const hasInventory = customerInventory.length > 0
 
-  // Get the custom acres rider
-  const acresRider = RIDERS.find(r => r.id === 'custom-acres')
-  const acresSelected = acresRider ? isRiderSelected(acresRider.id) : false
-  const acresValue = selectedRiders.find(r => r.riderId === 'custom-acres')?.customValue as number | undefined
+  // Get custom riders that require input
+  const customRiders = RIDERS.filter(r => r.requiresInput)
 
-  // Categories to show (exclude popular since it's shown separately)
+  // Categories to show (exclude popular since it's shown separately, exclude custom since we handle it below)
   const categoriesToShow = RIDER_CATEGORIES.filter(c => c.id !== 'popular' && c.id !== 'custom')
 
   return (
@@ -128,15 +126,29 @@ export function RiderSelector({
         })}
       </div>
 
-      {/* Custom Acres Input */}
-      {acresRider && (
-        <AcresInput
-          isSelected={acresSelected}
-          value={acresValue || null}
-          onChange={(value) => updateAcres('custom-acres', value)}
-          price={price}
-          source={source}
-        />
+      {/* Custom Riders Section */}
+      {customRiders.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium text-gray-700">Custom Riders</h3>
+          <div className="space-y-3">
+            {customRiders.map(rider => {
+              const isSelected = isRiderSelected(rider.id)
+              const customValue = selectedRiders.find(r => r.riderId === rider.id)?.customValue as number | undefined
+
+              return (
+                <CustomRiderInput
+                  key={rider.id}
+                  rider={rider}
+                  isSelected={isSelected}
+                  value={customValue || null}
+                  onChange={(value) => updateAcres(rider.id, value)}
+                  price={price}
+                  source={source}
+                />
+              )
+            })}
+          </div>
+        </div>
       )}
 
       {/* Selected Riders Summary */}

@@ -391,7 +391,7 @@ export function ReviewStep({
         <div className="border-t border-gray-200 pt-3">
           <p className="font-medium text-gray-700 mb-2">Important Disclosures:</p>
           <ul className="list-disc list-inside space-y-1 text-gray-600">
-            <li>Rental items (posts, riders, lockboxes) remain property of Pink Post Installations</li>
+            <li>Rental items (posts, riders, lockboxes) remain property of Pink Posts Installations</li>
             <li>Lost, damaged, or unreturned rental items are subject to replacement fees</li>
             <li>Replacement fees will be charged to your payment method on file</li>
           </ul>

@@ -3,7 +3,7 @@ import { SessionProvider } from '@/components/providers/session-provider'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Pink Post Installations | Professional Yard Sign Service',
+  title: 'Pink Posts Installations | Professional Yard Sign Service',
   description: "Central Kentucky's trusted yard sign installation service for real estate professionals. Same-day installation, professional presentation, GPS-tracked service.",
   keywords: ['yard sign installation', 'real estate signs', 'Lexington KY', 'sign service', 'realtor signs'],
 }

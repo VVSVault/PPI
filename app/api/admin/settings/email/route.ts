@@ -54,9 +54,9 @@ export async function POST(request: NextRequest) {
       const resend = new Resend(process.env.RESEND_API_KEY)
 
       await resend.emails.send({
-        from: 'Pink Post Installations <orders@pinkpostinstallations.com>',
+        from: 'Pink Posts Installations <orders@pinkpostinstallations.com>',
         to: process.env.ADMIN_EMAIL,
-        subject: 'Test Email - Pink Post Installations',
+        subject: 'Test Email - Pink Posts Installations',
         html: `
           <!DOCTYPE html>
           <html>
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
           <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background-color: #FFF0F3; border-radius: 12px; padding: 32px;">
               <h1 style="color: #E84A7A; margin: 0 0 16px;">Test Email</h1>
-              <p style="color: #333;">This is a test email from Pink Post Installations admin dashboard.</p>
+              <p style="color: #333;">This is a test email from Pink Posts Installations admin dashboard.</p>
               <p style="color: #333;">If you're receiving this, your email configuration is working correctly!</p>
               <p style="color: #666; font-size: 14px; margin-top: 24px;">
                 Sent at: ${new Date().toLocaleString()}

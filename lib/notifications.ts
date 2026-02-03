@@ -123,8 +123,8 @@ export async function createWelcomeNotification(userId: string, userName: string
   return createNotification({
     userId,
     type: 'welcome',
-    title: 'Welcome to Pink Post!',
-    message: `Hi ${userName}! Thanks for joining Pink Post Installations. Ready to place your first order?`,
+    title: 'Welcome to Pink Posts!',
+    message: `Hi ${userName}! Thanks for joining Pink Posts Installations. Ready to place your first order?`,
     link: '/dashboard/place-order',
   })
 }

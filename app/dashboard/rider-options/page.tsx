@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ChevronDown, ChevronUp, Star, Tag, Bed, Home, Key, Sparkles, Edit, Mountain, Info, ArrowRight } from 'lucide-react'
+import { ChevronDown, ChevronUp, Star, Tag, Bed, Home, Key, Sparkles, Edit, Mountain, Car, Info, ArrowRight } from 'lucide-react'
 import { Header } from '@/components/dashboard'
 import { Card, CardContent, Button } from '@/components/ui'
 import { cn } from '@/lib/utils'
@@ -26,7 +26,7 @@ const categories: Category[] = [
     label: 'Popular',
     icon: Star,
     riders: [
-      { id: 'open-house', name: 'Open House' },
+      { id: 'sold', name: 'SOLD' },
       { id: 'pending', name: 'Pending' },
       { id: 'coming-soon', name: 'Coming Soon' },
       { id: 'for-sale', name: 'For Sale' },
@@ -37,11 +37,14 @@ const categories: Category[] = [
     label: 'Status',
     icon: Tag,
     riders: [
-      { id: 'open-house', name: 'Open House' },
+      { id: 'sold', name: 'SOLD' },
       { id: 'pending', name: 'Pending' },
       { id: 'coming-soon', name: 'Coming Soon' },
       { id: 'for-sale', name: 'For Sale' },
-      { id: 'back-on-market', name: 'Back on the Market' },
+      { id: 'under-contract', name: 'Under Contract' },
+      { id: 'under-contract-backups', name: 'Under Contract, Taking Backups' },
+      { id: 'price-reduced', name: 'Price Reduced' },
+      { id: 'new-listing', name: 'New Listing' },
       { id: 'by-appointment', name: 'By Appointment Only' },
     ]
   },
@@ -61,14 +64,15 @@ const categories: Category[] = [
     label: 'Property Features',
     icon: Home,
     riders: [
-      { id: 'pool', name: 'Pool' },
-      { id: 'spa', name: 'Spa' },
+      { id: 'pool-spa', name: 'Pool/Spa' },
       { id: 'basement', name: 'Basement' },
+      { id: 'furnished', name: 'Furnished' },
+      { id: 'huge-backyard', name: 'Huge Backyard' },
       { id: 'horse-property', name: 'Horse Property' },
-      { id: 'lake-front', name: 'Lake Front' },
+      { id: 'waterfront', name: 'Waterfront' },
+      { id: 'golf-course', name: 'Golf Course' },
       { id: 'large-lot', name: 'Large Lot' },
       { id: 'rv-parking', name: 'RV Parking' },
-      { id: 'no-hoa', name: 'No HOA' },
     ]
   },
   {
@@ -77,7 +81,6 @@ const categories: Category[] = [
     icon: Key,
     riders: [
       { id: 'for-rent', name: 'For Rent' },
-      { id: 'for-lease', name: 'For Lease' },
       { id: 'for-sale-lease', name: 'For Sale or Lease' },
     ]
   },
@@ -90,6 +93,7 @@ const categories: Category[] = [
       { id: 'owner-agent', name: 'Owner/Agent' },
       { id: 'home-warranty', name: 'Home Warranty' },
       { id: 'gorgeous-inside', name: "I'm Gorgeous Inside" },
+      { id: 'neighborhood-specialist', name: 'Neighborhood Specialist' },
       { id: 'acreage', name: 'Acreage' },
     ]
   },
@@ -99,12 +103,13 @@ const categories: Category[] = [
     icon: Edit,
     riders: [
       { id: 'custom-acres', name: 'Custom Acres (e.g., "5 Acres")' },
+      { id: 'custom-car-garage', name: 'Car Garage (e.g., "3 Car Garage")' },
     ]
   },
 ]
 
 const terms = [
-  'Riders remain property of Pink Post Installations',
+  'Riders remain property of Pink Posts Installations',
   'Riders must be returned upon sign removal',
   'Custom riders available upon request (additional fees apply)',
   'Riders are installed at same time as post or within 24 hours',
@@ -207,22 +212,40 @@ export default function RiderOptionsPage() {
           ))}
         </div>
 
-        {/* Custom Acres Highlight */}
-        <Card variant="bordered" className="border-dashed border-2">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                <Mountain className="w-5 h-5 text-gray-500" />
+        {/* Custom Riders Highlight */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <Card variant="bordered" className="border-2 border-gray-200">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <Mountain className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Custom Acres Rider</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Need a specific acreage displayed? Enter any number like &quot;5 Acres&quot;, &quot;10 Acres&quot;, etc.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-medium text-gray-900">Custom Acres Rider</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Need a specific acreage displayed? We can create custom riders like &quot;5 Acres&quot;, &quot;10 Acres&quot;, etc. Select this option during checkout.
-                </p>
+            </CardContent>
+          </Card>
+
+          <Card variant="bordered" className="border-2 border-gray-200">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <Car className="w-5 h-5 text-gray-600" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Car Garage Rider</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Highlight the garage size! Enter any number like &quot;2 Car Garage&quot;, &quot;3 Car Garage&quot;, etc.
+                  </p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* CTA */}
         <div className="flex justify-center">

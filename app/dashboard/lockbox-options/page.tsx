@@ -39,7 +39,7 @@ const lockboxOptions = [
 ]
 
 const terms = [
-  'Rental lockboxes remain property of Pink Post Installations',
+  'Rental lockboxes remain property of Pink Posts Installations',
   'Rental fee is per order, not monthly',
   'SentriLock users must have their own lockbox and SentriKey app',
   'All lockboxes are installed at the same time as your post',

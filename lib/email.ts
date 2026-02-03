@@ -48,12 +48,12 @@ export async function sendOrderConfirmationEmail({
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Order Confirmation - Pink Post Installations</title>
+      <title>Order Confirmation - Pink Posts Installations</title>
     </head>
     <body style="font-family: 'Poppins', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #FFF0F3;">
       <div style="background-color: white; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 24px;">
-          <h1 style="color: #E84A7A; margin: 0;">Pink Post Installations</h1>
+          <h1 style="color: #E84A7A; margin: 0;">Pink Posts Installations</h1>
           <p style="color: #666; margin: 8px 0 0;">Order Confirmation</p>
         </div>
 
@@ -88,7 +88,7 @@ export async function sendOrderConfirmationEmail({
 
         <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #eee; text-align: center;">
           <p style="color: #666; margin: 0; font-size: 14px;">Questions? Contact us at support@pinkpostinstallations.com</p>
-          <p style="color: #999; margin: 8px 0 0; font-size: 12px;">&copy; ${new Date().getFullYear()} Pink Post Installations. All rights reserved.</p>
+          <p style="color: #999; margin: 8px 0 0; font-size: 12px;">&copy; ${new Date().getFullYear()} Pink Posts Installations. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -96,7 +96,7 @@ export async function sendOrderConfirmationEmail({
   `
 
   return getResend().emails.send({
-    from: 'Pink Post Installations <orders@pinkpostinstallations.com>',
+    from: 'Pink Posts Installations <orders@pinkpostinstallations.com>',
     to: customerEmail,
     subject: `Order Confirmation - ${orderNumber}`,
     html,
@@ -153,7 +153,7 @@ View order details in the admin dashboard.
   `.trim()
 
   return getResend().emails.send({
-    from: 'Pink Post Installations <orders@pinkpostinstallations.com>',
+    from: 'Pink Posts Installations <orders@pinkpostinstallations.com>',
     to: process.env.ADMIN_EMAIL!,
     subject: `${isExpedited ? '⚡ EXPEDITED ' : ''}New Order: ${orderNumber}`,
     text,
@@ -171,12 +171,12 @@ export async function sendPasswordResetEmail(
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Reset Your Password - Pink Post Installations</title>
+      <title>Reset Your Password - Pink Posts Installations</title>
     </head>
     <body style="font-family: 'Poppins', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #FFF0F3;">
       <div style="background-color: white; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 24px;">
-          <h1 style="color: #E84A7A; margin: 0;">Pink Post Installations</h1>
+          <h1 style="color: #E84A7A; margin: 0;">Pink Posts Installations</h1>
           <p style="color: #666; margin: 8px 0 0;">Password Reset Request</p>
         </div>
 
@@ -191,7 +191,7 @@ export async function sendPasswordResetEmail(
         <p style="color: #666; font-size: 14px;">If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
 
         <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #eee; text-align: center;">
-          <p style="color: #999; margin: 0; font-size: 12px;">&copy; ${new Date().getFullYear()} Pink Post Installations. All rights reserved.</p>
+          <p style="color: #999; margin: 0; font-size: 12px;">&copy; ${new Date().getFullYear()} Pink Posts Installations. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -199,9 +199,9 @@ export async function sendPasswordResetEmail(
   `
 
   return getResend().emails.send({
-    from: 'Pink Post Installations <noreply@pinkpostinstallations.com>',
+    from: 'Pink Posts Installations <noreply@pinkpostinstallations.com>',
     to: email,
-    subject: 'Reset Your Password - Pink Post Installations',
+    subject: 'Reset Your Password - Pink Posts Installations',
     html,
   })
 }
@@ -216,12 +216,12 @@ export async function sendInstallationCompleteEmail(
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Installation Complete - Pink Post Installations</title>
+      <title>Installation Complete - Pink Posts Installations</title>
     </head>
     <body style="font-family: 'Poppins', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #FFF0F3;">
       <div style="background-color: white; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 24px;">
-          <h1 style="color: #E84A7A; margin: 0;">Pink Post Installations</h1>
+          <h1 style="color: #E84A7A; margin: 0;">Pink Posts Installations</h1>
           <p style="color: #666; margin: 8px 0 0;">Installation Complete!</p>
         </div>
 
@@ -235,7 +235,7 @@ export async function sendInstallationCompleteEmail(
         </div>
 
         <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #eee; text-align: center;">
-          <p style="color: #666; margin: 0; font-size: 14px;">Thank you for choosing Pink Post Installations!</p>
+          <p style="color: #666; margin: 0; font-size: 14px;">Thank you for choosing Pink Posts Installations!</p>
         </div>
       </div>
     </body>
@@ -243,7 +243,7 @@ export async function sendInstallationCompleteEmail(
   `
 
   return getResend().emails.send({
-    from: 'Pink Post Installations <orders@pinkpostinstallations.com>',
+    from: 'Pink Posts Installations <orders@pinkpostinstallations.com>',
     to: customerEmail,
     subject: 'Your Sign Installation is Complete!',
     html,

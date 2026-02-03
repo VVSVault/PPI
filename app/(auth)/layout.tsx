@@ -21,7 +21,7 @@ export default function AuthLayout({
       {/* Footer */}
       <footer className="p-6 text-center text-sm text-gray-500">
         <p>
-          &copy; {new Date().getFullYear()} Pink Post Installations.{' '}
+          &copy; {new Date().getFullYear()} Pink Posts Installations.{' '}
           <Link href="/terms" className="hover:text-pink-500">
             Terms
           </Link>{' '}

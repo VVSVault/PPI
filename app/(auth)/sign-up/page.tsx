@@ -89,7 +89,7 @@ export default function SignUpPage() {
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
           <p className="mt-2 text-gray-600">
-            Get started with Pink Post today
+            Get started with Pink Posts today
           </p>
         </div>
 

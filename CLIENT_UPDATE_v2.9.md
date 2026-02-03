@@ -21,7 +21,7 @@ This document summarizes the recent updates made to the Pink Post Installations 
 ## User Interface Updates
 
 ### New Logo & Branding
-- Updated logo to the new pink bird mascot throughout the application
+- Updated logo to the new vectored pink bird mascot throughout the application
 - Logo appears in the favicon (browser tab icon), navigation bar, and dashboard sidebar
 - Clicking the logo in the sidebar now returns users to the homepage
 

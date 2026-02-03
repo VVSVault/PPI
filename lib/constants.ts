@@ -1,6 +1,6 @@
 // Application Constants
 
-export const APP_NAME = 'Pink Post Installations'
+export const APP_NAME = 'Pink Posts Installations'
 export const APP_DESCRIPTION = "Central Kentucky's trusted yard sign installation service for real estate professionals."
 
 // Contact Information

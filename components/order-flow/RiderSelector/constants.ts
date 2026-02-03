@@ -47,17 +47,20 @@ export const RIDER_CATEGORIES: RiderCategoryConfig[] = [
 
 export const RIDERS: RiderOption[] = [
   // === POPULAR (duplicates from other categories for quick access) ===
-  { id: 'pop-open-house', name: 'Open House', slug: 'open-house', category: 'popular', icon: 'Home' },
   { id: 'pop-pending', name: 'Pending', slug: 'pending', category: 'popular', icon: 'Clock' },
   { id: 'pop-coming-soon', name: 'Coming Soon', slug: 'coming-soon', category: 'popular', icon: 'Calendar' },
   { id: 'pop-for-sale', name: 'For Sale', slug: 'for-sale', category: 'popular', icon: 'DollarSign' },
+  { id: 'pop-sold', name: 'SOLD', slug: 'sold', category: 'popular', icon: 'CheckCircle' },
 
   // === STATUS ===
-  { id: 'open-house', name: 'Open House', slug: 'open-house', category: 'status', icon: 'Home' },
   { id: 'pending', name: 'Pending', slug: 'pending', category: 'status', icon: 'Clock' },
   { id: 'coming-soon', name: 'Coming Soon', slug: 'coming-soon', category: 'status', icon: 'Calendar' },
   { id: 'for-sale', name: 'For Sale', slug: 'for-sale', category: 'status', icon: 'DollarSign' },
-  { id: 'back-on-market', name: 'Back on the Market', slug: 'back-on-market', category: 'status', icon: 'RefreshCw' },
+  { id: 'sold', name: 'SOLD', slug: 'sold', category: 'status', icon: 'CheckCircle' },
+  { id: 'under-contract', name: 'Under Contract', slug: 'under-contract', category: 'status', icon: 'FileCheck' },
+  { id: 'under-contract-backups', name: 'Under Contract, Taking Backups', slug: 'under-contract-backups', category: 'status', icon: 'FileCheck' },
+  { id: 'price-reduced', name: 'Price Reduced', slug: 'price-reduced', category: 'status', icon: 'TrendingDown' },
+  { id: 'new-listing', name: 'New Listing', slug: 'new-listing', category: 'status', icon: 'Sparkles' },
   { id: 'by-appointment', name: 'By Appointment Only', slug: 'by-appointment', category: 'status', icon: 'CalendarCheck' },
 
   // === BEDROOMS ===
@@ -67,18 +70,18 @@ export const RIDERS: RiderOption[] = [
   { id: '6-beds', name: '6 Beds', slug: '6-beds', category: 'bedrooms', icon: 'Bed' },
 
   // === PROPERTY FEATURES ===
-  { id: 'pool', name: 'Pool', slug: 'pool', category: 'property_features', icon: 'Waves' },
-  { id: 'spa', name: 'Spa', slug: 'spa', category: 'property_features', icon: 'Sparkles' },
+  { id: 'pool-spa', name: 'Pool/Spa', slug: 'pool-spa', category: 'property_features', icon: 'Waves' },
   { id: 'basement', name: 'Basement', slug: 'basement', category: 'property_features', icon: 'ArrowDownSquare' },
+  { id: 'furnished', name: 'Furnished', slug: 'furnished', category: 'property_features', icon: 'Sofa' },
+  { id: 'huge-backyard', name: 'Huge Backyard', slug: 'huge-backyard', category: 'property_features', icon: 'TreePine' },
   { id: 'horse-property', name: 'Horse Property', slug: 'horse-property', category: 'property_features', icon: 'Heart' },
-  { id: 'lake-front', name: 'Lake Front', slug: 'lake-front', category: 'property_features', icon: 'Anchor' },
+  { id: 'waterfront', name: 'Waterfront', slug: 'waterfront', category: 'property_features', icon: 'Anchor' },
+  { id: 'golf-course', name: 'Golf Course', slug: 'golf-course', category: 'property_features', icon: 'Flag' },
   { id: 'large-lot', name: 'Large Lot', slug: 'large-lot', category: 'property_features', icon: 'Maximize' },
   { id: 'rv-parking', name: 'RV Parking', slug: 'rv-parking', category: 'property_features', icon: 'Truck' },
-  { id: 'no-hoa', name: 'No HOA', slug: 'no-hoa', category: 'property_features', icon: 'ShieldOff' },
 
   // === RENTAL & LEASE ===
   { id: 'for-rent', name: 'For Rent', slug: 'for-rent', category: 'rental_lease', icon: 'Key' },
-  { id: 'for-lease', name: 'For Lease', slug: 'for-lease', category: 'rental_lease', icon: 'FileText' },
   { id: 'for-sale-or-lease', name: 'For Sale or Lease', slug: 'for-sale-lease', category: 'rental_lease', icon: 'GitBranch' },
 
   // === SPECIAL ===
@@ -86,6 +89,7 @@ export const RIDERS: RiderOption[] = [
   { id: 'owner-agent', name: 'Owner/Agent', slug: 'owner-agent', category: 'special', icon: 'UserCheck' },
   { id: 'home-warranty', name: 'Home Warranty', slug: 'home-warranty', category: 'special', icon: 'Shield' },
   { id: 'gorgeous-inside', name: "I'm Gorgeous Inside", slug: 'gorgeous-inside', category: 'special', icon: 'Gem' },
+  { id: 'neighborhood-specialist', name: 'Neighborhood Specialist', slug: 'neighborhood-specialist', category: 'special', icon: 'MapPin' },
   { id: 'acreage', name: 'Acreage', slug: 'acreage', category: 'special', icon: 'TreePine' },
 
   // === CUSTOM (with input) ===
@@ -99,6 +103,17 @@ export const RIDERS: RiderOption[] = [
     inputLabel: 'Number of Acres',
     inputType: 'number',
     inputSuffix: 'Acres'
+  },
+  {
+    id: 'custom-car-garage',
+    name: 'Car Garage',
+    slug: 'car-garage',
+    category: 'custom',
+    icon: 'Car',
+    requiresInput: true,
+    inputLabel: 'Number of Cars',
+    inputType: 'number',
+    inputSuffix: 'Car Garage'
   }
 ]
 
@@ -107,7 +122,7 @@ export const RIDER_PRICING = {
   install: 2.00
 }
 
-export const POPULAR_RIDER_IDS = ['pop-open-house', 'pop-pending', 'pop-coming-soon', 'pop-for-sale']
+export const POPULAR_RIDER_IDS = ['pop-pending', 'pop-coming-soon', 'pop-for-sale', 'pop-sold']
 
 export function getRidersByCategory(category: string): RiderOption[] {
   return RIDERS.filter(r => r.category === category)
