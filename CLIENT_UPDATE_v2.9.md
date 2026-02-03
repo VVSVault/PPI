@@ -1,20 +1,38 @@
-# Pink Post Installations - Platform Update Summary
+# Pink Posts Installations - Platform Update Summary
 
 **Version:** 2.9.x
-**Date:** January 2026
+**Date:** February 2026
 
-This document summarizes the recent updates made to the Pink Post Installations platform, including new features, UI improvements, security enhancements, and payment integration.
+This document summarizes the recent updates made to the Pink Posts Installations platform, including new features, UI improvements, security enhancements, and payment integration.
 
 ---
 
 ## Table of Contents
 
-1. [User Interface Updates](#user-interface-updates)
-2. [New Customer Features](#new-customer-features)
-3. [Admin Improvements](#admin-improvements)
-4. [Security Enhancements](#security-enhancements)
-5. [Stripe Payment Integration](#stripe-payment-integration)
-6. [Stripe Setup Instructions](#stripe-setup-instructions)
+1. [Branding Updates](#branding-updates)
+2. [User Interface Updates](#user-interface-updates)
+3. [Rider Options Updates](#rider-options-updates)
+4. [New Pages](#new-pages)
+5. [New Customer Features](#new-customer-features)
+6. [Admin Improvements](#admin-improvements)
+7. [Security Enhancements](#security-enhancements)
+8. [Stripe Payment Integration](#stripe-payment-integration)
+9. [Stripe Setup Instructions](#stripe-setup-instructions)
+
+---
+
+## Branding Updates
+
+### Company Name
+- Changed branding from "Pink Post" to "Pink Posts" throughout the entire platform
+- Updated in:
+  - Logo text display
+  - Page titles and metadata
+  - Email templates (order confirmation, password reset, installation complete)
+  - Footer copyright
+  - Sign-up page
+  - Notifications
+  - All terms and conditions references
 
 ---
 
@@ -32,6 +50,60 @@ This document summarizes the recent updates made to the Pink Post Installations 
 
 ### Homepage Navigation
 - When a user is signed in and visits the homepage, the "Sign In" button now displays as "Dashboard" for quick access
+
+---
+
+## Rider Options Updates
+
+### New Riders Added
+| Rider | Category |
+|-------|----------|
+| SOLD | Status |
+| Under Contract, Taking Backups | Status |
+| Huge Backyard | Property Features |
+| Furnished | Property Features |
+| Pool/Spa | Property Features |
+| Golf Course | Property Features |
+| Waterfront | Property Features |
+| Neighborhood Specialist | Special |
+| Car Garage (Custom) | Custom |
+
+### Riders Removed
+- Open House
+- Back on the Market
+- No HOA
+- For Lease
+
+### Riders Changed
+- "Lake Front" renamed to "Waterfront"
+
+### Custom Riders
+Two custom rider options now available with number input:
+1. **Custom Acres** - Enter any acreage (e.g., "5 Acres", "10 Acres")
+2. **Car Garage** - Enter garage size (e.g., "2 Car Garage", "3 Car Garage")
+
+Both custom options now have improved styling with better visibility in the order form.
+
+---
+
+## New Pages
+
+### Terms and Conditions (`/terms`)
+New page covering:
+- **Order Processing**: Orders before 4pm EST receive next business day installation
+- **Business Days**: Monday through Saturday (Sunday closed)
+- **HOA Notice**: Customer responsibility to inform of HOA restrictions
+- **Kentucky 811**: Utility line marking information and liability disclaimers
+- **PVC Water Lines**: Risk disclosure for undetectable water lines
+- **Rider Rental Terms**: Property ownership and return requirements
+
+### Privacy Policy (`/privacy`)
+New page covering:
+- No data sales commitment
+- Information we collect (contact info, addresses, order history, payments)
+- How information is used
+- Payment security via Stripe
+- Contact information for privacy questions
 
 ---
 
@@ -258,6 +330,6 @@ Webhooks allow Stripe to notify your application about payment events.
 
 ## Support
 
-If you encounter any issues with the payment integration or other features, please contact the development team.
+For questions or concerns, contact us at **859-395-8188**
 
 **Test Mode:** Remember that test mode transactions don't process real money. Always verify you're using live keys before accepting real payments.
