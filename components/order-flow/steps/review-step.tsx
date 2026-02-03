@@ -76,15 +76,15 @@ export function ReviewStep({
   }
 
   // Brochure box
-  if (formData.brochure_option === 'stored') {
+  if (formData.brochure_option === 'purchase') {
     orderItems.push({
-      description: 'Brochure Box Install (from storage)',
-      price: PRICING.brochure_box_install,
+      description: 'Brochure Box Purchase (includes install)',
+      price: PRICING.brochure_box_purchase,
     })
-  } else if (formData.brochure_option === 'rental') {
+  } else if (formData.brochure_option === 'own') {
     orderItems.push({
-      description: 'Brochure Box Rental',
-      price: PRICING.brochure_box_rental,
+      description: 'Brochure Box Install (your own)',
+      price: PRICING.brochure_box_install,
     })
   }
 
@@ -208,24 +208,23 @@ export function ReviewStep({
       }
 
       // Brochure box
-      if (formData.brochure_option === 'stored') {
+      if (formData.brochure_option === 'purchase') {
         items.push({
           item_type: 'brochure_box',
-          item_category: 'storage',
-          description: 'Brochure Box Install (from storage)',
+          item_category: 'purchase',
+          description: 'Brochure Box Purchase (includes install)',
+          quantity: 1,
+          unit_price: PRICING.brochure_box_purchase,
+          total_price: PRICING.brochure_box_purchase,
+        })
+      } else if (formData.brochure_option === 'own') {
+        items.push({
+          item_type: 'brochure_box',
+          item_category: 'install',
+          description: 'Brochure Box Install (your own)',
           quantity: 1,
           unit_price: PRICING.brochure_box_install,
           total_price: PRICING.brochure_box_install,
-          customer_brochure_box_id: formData.customer_brochure_box_id,
-        })
-      } else if (formData.brochure_option === 'rental') {
-        items.push({
-          item_type: 'brochure_box',
-          item_category: 'rental',
-          description: 'Brochure Box Rental',
-          quantity: 1,
-          unit_price: PRICING.brochure_box_rental,
-          total_price: PRICING.brochure_box_rental,
         })
       }
 

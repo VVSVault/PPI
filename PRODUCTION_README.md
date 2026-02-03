@@ -504,7 +504,7 @@ WHERE email = 'user@example.com';
   - Links to `/` (home) on marketing pages
 - **Updated:** Pricing changes per client spec
   - Expedite fee: $25 → $50 (same day or next day after 4pm)
-  - Lockbox rental: $15 → $10
+  - Lockbox rental: $15 → $10 (includes lockbox + installation)
   - Brochure box install: $2 → $3
   - Brochure box rental: NEW $5 option (replaces "buy new" option)
 - **Removed:** Replacement charges from Post Options cards
@@ -570,10 +570,9 @@ WHERE email = 'user@example.com';
 - **New:** Single order API endpoint (`/api/orders/[id]`)
   - GET: Fetch order details for confirmation page
 - **Updated:** Lockbox options page with correct pricing
-  - SentriLock: $5 install (customer-owned only)
-  - Mechanical (Owned): $5 install
-  - Mechanical (Rental): $15 per order
-  - Updated terms to clarify "per order, not monthly"
+  - Realtor Bluetooth Lockbox: $5 install (customer-owned)
+  - Mechanical (Your Own): $5 install
+  - Mechanical (Rental): $10 (includes lockbox + installation)
 - **Updated:** RiderSelector with rental terms link
   - "View Rental Terms & Conditions" link opens /riders#terms in new tab
   - Added `id="terms"` anchor to riders page terms section

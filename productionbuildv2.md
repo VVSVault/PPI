@@ -229,7 +229,7 @@ Updated per client specification:
 | Item | Old Price | New Price |
 |------|-----------|-----------|
 | Expedite Fee | $25 | $50 |
-| Lockbox Rental | $15 | $10 |
+| Lockbox Rental | $15 | $10 (no rental fee, just install+rental combined) |
 | Brochure Box Install | $2 | $3 |
 | Brochure Box Rental | N/A | $5 (new option) |
 
@@ -428,10 +428,9 @@ New page at `/dashboard/order-confirmation`:
 - Real data persistence on profile page
 
 #### Lockbox Options Updates
-- SentriLock: $5 install (customer-owned only)
-- Mechanical (Owned): $5 install
-- Mechanical (Rental): $15 per order
-- Clarified "per order, not monthly" in terms
+- Realtor Bluetooth Lockbox: $5 install (customer-owned)
+- Mechanical (Your Own): $5 install
+- Mechanical (Rental): $10 (includes lockbox + installation)
 
 #### Removed Features
 - Deleted invoices page (payment at order time per spec)

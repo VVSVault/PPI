@@ -1,26 +1,27 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { Header } from '@/components/dashboard'
 import { Card, CardContent, Button } from '@/components/ui'
-import { Lock, Key, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 const lockboxOptions = [
   {
-    name: 'SentriLock',
+    name: 'Realtor Bluetooth Lockbox',
     slug: 'sentrilock',
-    icon: Lock,
-    description: 'Bluetooth-enabled electronic lockbox with SentriKey app integration and real-time access tracking.',
+    image: '/images/lockboxes/bluetooth-lockbox.png',
+    description: 'We can install your Bluetooth-enabled realtor lockbox! SentriLock or similar electronic lockbox with app integration.',
     price: 5,
     priceLabel: 'Install Fee',
-    note: 'Customer-owned SentriLock lockboxes only',
+    note: 'Your Realtor Bluetooth Lockbox',
     isRental: false,
   },
   {
-    name: 'Mechanical Lockbox (Owned)',
+    name: 'Mechanical Lockbox (Your Own)',
     slug: 'mechanical-own',
-    icon: Key,
-    description: 'Traditional combination lockbox. Bring your own and we\'ll install it for you.',
+    image: '/images/lockboxes/mechanical-lockbox.png',
+    description: 'Install your mechanical combination lockbox. Bring your own and we\'ll mount it securely.',
     price: 5,
     priceLabel: 'Install Fee',
     note: 'Your lockbox, our installation',
@@ -29,19 +30,19 @@ const lockboxOptions = [
   {
     name: 'Mechanical Lockbox (Rental)',
     slug: 'mechanical-rent',
-    icon: Key,
-    description: 'Don\'t have a lockbox? Rent one of ours for the duration of your listing.',
-    price: 15,
-    priceLabel: 'Rental Fee',
-    note: 'Per order, includes installation',
+    image: '/images/lockboxes/rental-lockbox.png',
+    description: 'Rent and install our mechanical lockbox! We\'ll provide and install a combination lockbox for your listing.',
+    price: 10,
+    priceLabel: 'Rental + Install',
+    note: 'We provide the lockbox',
     isRental: true,
   },
 ]
 
 const terms = [
   'Rental lockboxes remain property of Pink Posts Installations',
-  'Rental fee is per order, not monthly',
-  'SentriLock users must have their own lockbox and SentriKey app',
+  'Rental lockboxes are returned when your sign is removed',
+  'Bluetooth/SentriLock users must have their own lockbox and app',
   'All lockboxes are installed at the same time as your post',
 ]
 
@@ -56,43 +57,43 @@ export default function LockboxOptionsPage() {
         </p>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {lockboxOptions.map((lockbox) => {
-            const Icon = lockbox.icon
-            return (
-              <Card key={lockbox.slug} variant="bordered" className="relative overflow-hidden">
-                {lockbox.isRental && (
-                  <div className="absolute top-0 right-0 bg-pink-500 text-white text-xs px-3 py-1 rounded-bl-lg">
-                    Rental Available
-                  </div>
-                )}
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-pink-100 flex items-center justify-center">
-                      <Icon className="w-6 h-6 text-pink-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{lockbox.name}</h3>
-                      <p className="text-xs text-gray-500">{lockbox.note}</p>
-                    </div>
-                  </div>
+          {lockboxOptions.map((lockbox) => (
+            <Card key={lockbox.slug} variant="bordered" className="relative overflow-hidden">
+              {lockbox.isRental && (
+                <div className="absolute top-0 right-0 bg-pink-500 text-white text-xs px-3 py-1 rounded-bl-lg z-10">
+                  Rental Available
+                </div>
+              )}
+              <div className="aspect-square relative bg-gray-50">
+                <Image
+                  src={lockbox.image}
+                  alt={lockbox.name}
+                  fill
+                  className="object-contain p-4"
+                />
+              </div>
+              <CardContent className="p-6">
+                <div className="mb-4">
+                  <h3 className="font-semibold text-gray-900">{lockbox.name}</h3>
+                  <p className="text-xs text-gray-500">{lockbox.note}</p>
+                </div>
 
-                  <p className="text-gray-600 text-sm mb-4">{lockbox.description}</p>
+                <p className="text-gray-600 text-sm mb-4">{lockbox.description}</p>
 
-                  <div className="flex items-baseline gap-1 mb-4">
-                    <span className="text-2xl font-bold text-pink-600">${lockbox.price}</span>
-                    <span className="text-sm text-gray-500">{lockbox.priceLabel}</span>
-                  </div>
+                <div className="flex items-baseline gap-1 mb-4">
+                  <span className="text-2xl font-bold text-pink-600">${lockbox.price}</span>
+                  <span className="text-sm text-gray-500">{lockbox.priceLabel}</span>
+                </div>
 
-                  <Link href="/dashboard/place-order">
-                    <Button size="sm" className="w-full">
-                      Select & Order
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            )
-          })}
+                <Link href="/dashboard/place-order">
+                  <Button size="sm" className="w-full">
+                    Select & Order
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Terms */}

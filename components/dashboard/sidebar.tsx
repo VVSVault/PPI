@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   Wrench,
+  Package,
 } from 'lucide-react'
 import { Logo } from '@/components/shared'
 import { cn } from '@/lib/utils'
@@ -26,6 +27,11 @@ const mainNavItems = [
     label: 'Dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
+  },
+  {
+    label: 'My Inventory',
+    href: '/dashboard/inventory',
+    icon: Package,
   },
   {
     label: 'Post Options',

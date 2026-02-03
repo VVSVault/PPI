@@ -6,12 +6,11 @@ const footerLinks = {
   services: [
     { label: 'Post Options', href: '/posts' },
     { label: 'Riders', href: '/riders' },
-    { label: 'Lockboxes', href: '/dashboard/lockbox-options' },
+    { label: 'Lockboxes', href: '/lockboxes' },
   ],
   support: [
     { label: 'Contact Us', href: '/contact' },
     { label: 'FAQ', href: '/faq' },
-    { label: 'Help Center', href: '/help' },
   ],
   legal: [
     { label: 'Terms of Service', href: '/terms' },
@@ -34,17 +33,17 @@ const Footer = () => {
               estate professionals.
             </p>
             <div className="mt-6 space-y-3">
-              <div className="flex items-center gap-3 text-sm">
-                <MapPin className="w-4 h-4 text-pink-500 flex-shrink-0" />
-                <span>Lexington, KY</span>
+              <div className="flex items-start gap-3 text-sm">
+                <MapPin className="w-4 h-4 text-pink-500 flex-shrink-0 mt-0.5" />
+                <span>110 Winding View Trail<br />Georgetown, KY 40324</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <Phone className="w-4 h-4 text-pink-500 flex-shrink-0" />
-                <span>(859) 555-0123</span>
+                <span>859-395-8188</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <Mail className="w-4 h-4 text-pink-500 flex-shrink-0" />
-                <span>hello@pinkpost.com</span>
+                <span>Contact@PinkPosts.com</span>
               </div>
             </div>
           </div>

@@ -155,7 +155,7 @@ export function LockboxStep({ formData, updateFormData, inventory }: StepProps) 
       </div>
 
       <div className="p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
-        <p><strong>Note:</strong> SentriLock lockboxes are agent-owned only. Mechanical lockboxes can be rented for ${PRICING.lockbox_rental} per order or we&apos;ll install your own for ${PRICING.lockbox_install}.</p>
+        <p><strong>Note:</strong> Install your own lockbox (Bluetooth or mechanical) for ${PRICING.lockbox_install}, or rent and install our mechanical lockbox for ${PRICING.lockbox_rental} (includes lockbox + installation).</p>
       </div>
     </div>
   )

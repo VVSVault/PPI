@@ -2,6 +2,7 @@ import {
   Hero,
   PostShowcase,
   RiderCallout,
+  LockboxSection,
   ValueProposition,
   TripCallout,
   FAQSection,
@@ -14,6 +15,7 @@ export default function HomePage() {
       <Hero />
       <PostShowcase />
       <RiderCallout />
+      <LockboxSection />
       <ValueProposition />
       <TripCallout />
       <FAQSection />

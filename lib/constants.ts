@@ -5,9 +5,9 @@ export const APP_DESCRIPTION = "Central Kentucky's trusted yard sign installatio
 
 // Contact Information
 export const CONTACT = {
-  phone: '(859) 555-0123',
-  email: 'hello@pinkpost.com',
-  address: 'Lexington, KY',
+  phone: '859-395-8188',
+  email: 'Contact@PinkPosts.com',
+  address: '110 Winding View Trail, Georgetown, KY 40324',
 }
 
 // Service Areas
@@ -76,14 +76,12 @@ export const PRICING = {
     custom: 10,
   },
   lockboxes: {
-    standard: {
-      rental: 15,
-      deposit: 50,
-    },
-    electronic: {
-      rental: 25,
-      deposit: 100,
-    },
+    install: 5,
+    rental: 10,
+  },
+  brochureBox: {
+    purchase: 23,
+    install: 2,
   },
 }
 

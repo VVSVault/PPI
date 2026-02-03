@@ -44,7 +44,7 @@ export interface OrderFormData {
   customer_lockbox_id?: string
 
   // Brochure Box
-  brochure_option: 'stored' | 'rental' | 'none'
+  brochure_option: 'purchase' | 'own' | 'none'
   customer_brochure_box_id?: string
 
   // Scheduling
@@ -86,8 +86,8 @@ export const PRICING = {
   rider_install: 2,
   lockbox_install: 5,
   lockbox_rental: 10,
-  brochure_box_rental: 5,
-  brochure_box_install: 3,
+  brochure_box_purchase: 23,
+  brochure_box_install: 2,
   fuel_surcharge: 2.47,
   expedite_fee: 50,
 } as const

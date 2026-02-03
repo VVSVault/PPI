@@ -590,4 +590,4 @@ INSERT INTO rider_catalog (name, slug, requires_input, input_label, display_orde
 -- Lockbox Types
 INSERT INTO lockbox_types (name, slug, description, install_price, rental_price, is_rentable, display_order) VALUES
   ('SentriLock', 'sentrilock', 'Agent-owned SentriLock lockbox. We install your own lockbox.', 5.00, NULL, false, 1),
-  ('Mechanical Lockbox', 'mechanical', 'Standard mechanical combination lockbox.', 5.00, 15.00, true, 2);
+  ('Mechanical Lockbox', 'mechanical', 'Standard mechanical combination lockbox.', 5.00, 10.00, true, 2);

@@ -142,7 +142,7 @@ async function main() {
       create: {
         name: 'Mechanical (Rental)',
         description: 'Standard mechanical lockbox rental',
-        rentalPrice: 15.00,
+        rentalPrice: 10.00,
         installFee: 5.00,
         isRentable: true,
         isActive: true,
