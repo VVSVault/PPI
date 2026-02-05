@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Trash2, Edit2, Package, Tag, Lock, FileBox } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import { ArrowLeft, Plus, Trash2, Package, Tag, Lock, FileBox } from 'lucide-react'
 import { Card, CardContent, Button, Input, Badge, Modal } from '@/components/ui'
 
 interface CustomerData {
@@ -37,8 +38,9 @@ interface CustomerData {
   }>
 }
 
-export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function CustomerDetailPage() {
+  const params = useParams()
+  const id = params.id as string
   const [data, setData] = useState<CustomerData | null>(null)
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
