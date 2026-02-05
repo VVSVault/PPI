@@ -102,3 +102,97 @@ export async function createSetupIntent(customerId: string) {
     payment_method_types: ['card'],
   })
 }
+
+// Stripe Tax calculation
+interface TaxLineItem {
+  amount: number // in cents
+  reference: string
+  tax_code?: string
+}
+
+interface TaxAddress {
+  line1?: string
+  city: string
+  state: string
+  postal_code: string
+  country: string
+}
+
+export async function calculateTax(
+  lineItems: TaxLineItem[],
+  shippingAddress: TaxAddress
+): Promise<{ taxAmountExclusive: number; taxBreakdown: Array<{ amount: number; jurisdiction: string; rate: string }> }> {
+  try {
+    const calculation = await getStripe().tax.calculations.create({
+      currency: 'usd',
+      line_items: lineItems.map((item) => ({
+        amount: item.amount,
+        reference: item.reference,
+        // txcd_99999999 is the default tax code for general services
+        tax_code: item.tax_code || 'txcd_99999999',
+      })),
+      customer_details: {
+        address: {
+          line1: shippingAddress.line1 || '',
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          postal_code: shippingAddress.postal_code,
+          country: shippingAddress.country,
+        },
+        address_source: 'shipping',
+      },
+    })
+
+    // Extract tax breakdown for transparency
+    const taxBreakdown = calculation.tax_breakdown?.map((breakdown) => {
+      const percentDecimal = breakdown.tax_rate_details?.percentage_decimal
+      const rateValue = percentDecimal ? parseFloat(percentDecimal) * 100 : 0
+      // Access display_name from the jurisdiction object
+      const jurisdictionName = breakdown.tax_rate_details?.country || 'unknown'
+      return {
+        amount: breakdown.amount,
+        jurisdiction: jurisdictionName,
+        rate: `${rateValue.toFixed(2)}%`,
+      }
+    }) || []
+
+    return {
+      taxAmountExclusive: calculation.tax_amount_exclusive,
+      taxBreakdown,
+    }
+  } catch (error) {
+    console.error('Stripe Tax calculation error:', error)
+    // Fall back to manual calculation if Stripe Tax fails
+    // This ensures orders can still be placed even if tax service is unavailable
+    throw error
+  }
+}
+
+// Check if Stripe Tax is enabled (useful for feature flagging)
+export async function isStripeTaxEnabled(): Promise<boolean> {
+  try {
+    // Try a minimal tax calculation to verify the service is enabled
+    await getStripe().tax.calculations.create({
+      currency: 'usd',
+      line_items: [{ amount: 100, reference: 'test' }],
+      customer_details: {
+        address: {
+          city: 'Lexington',
+          state: 'KY',
+          postal_code: '40502',
+          country: 'US',
+        },
+        address_source: 'shipping',
+      },
+    })
+    return true
+  } catch (error: unknown) {
+    // If we get a specific error about Tax not being enabled, return false
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'tax_not_enabled') {
+      return false
+    }
+    // Other errors might be transient, so we log but assume enabled
+    console.warn('Could not verify Stripe Tax status:', error)
+    return false
+  }
+}

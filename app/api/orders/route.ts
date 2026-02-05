@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser, generateOrderNumber } from '@/lib/auth-utils'
 import { createOrderSchema } from '@/lib/validations'
-import { createPaymentIntent, createCustomer } from '@/lib/stripe/server'
+import { createPaymentIntent, createCustomer, calculateTax } from '@/lib/stripe/server'
 import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/lib/email'
 
 const FUEL_SURCHARGE = 2.47
+const FALLBACK_TAX_RATE = 0.06 // Fallback Kentucky 6% sales tax if Stripe Tax unavailable
 
 export async function GET(request: NextRequest) {
   try {
@@ -62,8 +63,83 @@ export async function POST(request: NextRequest) {
 
     // Calculate totals
     const subtotal = orderData.items.reduce((sum, item) => sum + item.total_price, 0)
-    const expediteFee = orderData.is_expedited ? 25 : 0
-    const total = subtotal + FUEL_SURCHARGE + expediteFee
+    const expediteFee = orderData.is_expedited ? 50 : 0
+
+    // Handle promo code discount
+    let discount = 0
+    let promoCodeId: string | undefined = undefined
+    if (orderData.promo_code_id) {
+      const promoCode = await prisma.promoCode.findUnique({
+        where: { id: orderData.promo_code_id },
+      })
+      if (promoCode && promoCode.isActive) {
+        // Validate and calculate discount
+        if (promoCode.discountType === 'percentage') {
+          discount = subtotal * (Number(promoCode.discountValue) / 100)
+        } else {
+          discount = Math.min(Number(promoCode.discountValue), subtotal)
+        }
+        discount = Math.round(discount * 100) / 100
+        promoCodeId = promoCode.id
+
+        // Increment promo code usage
+        await prisma.promoCode.update({
+          where: { id: promoCode.id },
+          data: { currentUses: { increment: 1 } },
+        })
+      }
+    }
+
+    const discountedSubtotal = Math.max(0, subtotal - discount)
+    const taxableAmount = discountedSubtotal + expediteFee // Fuel surcharge typically not taxed
+
+    // Calculate tax using Stripe Tax (with fallback to hardcoded rate)
+    let tax = 0
+    let taxCalculationMethod = 'fallback'
+
+    try {
+      // Build line items for Stripe Tax calculation
+      const taxLineItems = orderData.items.map((item, index) => ({
+        amount: Math.round(item.total_price * 100), // Convert to cents
+        reference: `item_${index}_${item.item_type}`,
+        // Use general services tax code - Stripe will apply appropriate rate
+        tax_code: 'txcd_99999999',
+      }))
+
+      // Add expedite fee as a line item if applicable
+      if (expediteFee > 0) {
+        taxLineItems.push({
+          amount: Math.round(expediteFee * 100),
+          reference: 'expedite_fee',
+          tax_code: 'txcd_99999999',
+        })
+      }
+
+      // Apply discount proportionally (reduce first item amount for simplicity)
+      if (discount > 0 && taxLineItems.length > 0) {
+        const discountCents = Math.round(discount * 100)
+        taxLineItems[0].amount = Math.max(0, taxLineItems[0].amount - discountCents)
+      }
+
+      const taxResult = await calculateTax(taxLineItems, {
+        line1: orderData.property_address,
+        city: orderData.property_city,
+        state: orderData.property_state || 'KY',
+        postal_code: orderData.property_zip,
+        country: 'US',
+      })
+
+      tax = taxResult.taxAmountExclusive / 100 // Convert back from cents
+      taxCalculationMethod = 'stripe_tax'
+      console.log('Stripe Tax calculated:', { tax, breakdown: taxResult.taxBreakdown })
+    } catch (taxError) {
+      // Fallback to manual calculation if Stripe Tax fails
+      console.warn('Stripe Tax calculation failed, using fallback rate:', taxError)
+      tax = Math.round(taxableAmount * FALLBACK_TAX_RATE * 100) / 100
+      taxCalculationMethod = 'fallback'
+    }
+
+    const total = discountedSubtotal + FUEL_SURCHARGE + expediteFee + tax
 
     // Create or get Stripe customer
     let stripeCustomerId = user.stripeCustomerId
@@ -111,7 +187,10 @@ export async function POST(request: NextRequest) {
         subtotal,
         fuelSurcharge: FUEL_SURCHARGE,
         expediteFee,
+        discount,
+        tax,
         total,
+        promoCodeId,
         paymentIntentId: paymentIntent.id,
         paymentStatus: paymentIntent.status === 'succeeded' ? 'succeeded' : 'processing',
         orderItems: {

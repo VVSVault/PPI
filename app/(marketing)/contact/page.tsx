@@ -127,27 +127,58 @@ export default function ContactPage() {
               <h2 className="text-xl font-bold text-gray-900 mb-4">
                 Service Area
               </h2>
-              <p className="text-gray-600 mb-4">
-                We proudly serve real estate professionals throughout Central Kentucky, including:
+              <p className="text-gray-600 mb-6">
+                We proudly serve real estate professionals throughout Central Kentucky and Greater Cincinnati.
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  'Fayette County',
-                  'Scott County',
-                  'Woodford County',
-                  'Jessamine County',
-                  'Clark County',
-                  'Madison County',
-                  'Bourbon County',
-                  'Franklin County',
-                ].map((county) => (
-                  <div
-                    key={county}
-                    className="px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-700 text-center"
-                  >
-                    {county}
-                  </div>
-                ))}
+
+              {/* Kentucky */}
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-pink-500 rounded-full"></span>
+                  Kentucky
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    'Fayette County',
+                    'Scott County',
+                    'Woodford County',
+                    'Jessamine County',
+                    'Clark County',
+                    'Madison County',
+                    'Bourbon County',
+                    'Franklin County',
+                  ].map((county) => (
+                    <div
+                      key={county}
+                      className="px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-700 text-center"
+                    >
+                      {county}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Ohio */}
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-pink-500 rounded-full"></span>
+                  Ohio (Greater Cincinnati)
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    'Hamilton County',
+                    'Butler County',
+                    'Warren County',
+                    'Clermont County',
+                  ].map((county) => (
+                    <div
+                      key={county}
+                      className="px-3 py-2 bg-gray-50 rounded-lg text-sm text-gray-700 text-center"
+                    >
+                      {county}
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

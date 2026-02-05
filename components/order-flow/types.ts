@@ -54,6 +54,11 @@ export interface OrderFormData {
   // Payment
   payment_method_id?: string
   save_payment_method: boolean
+
+  // Promo Code
+  promo_code?: string
+  promo_code_id?: string
+  discount?: number
 }
 
 export interface StepProps {
@@ -90,4 +95,5 @@ export const PRICING = {
   brochure_box_install: 2,
   fuel_surcharge: 2.47,
   expedite_fee: 50,
+  tax_rate: 0.06, // Kentucky 6% sales tax
 } as const

@@ -118,6 +118,68 @@ export default function TermsPage() {
                 </ul>
               </section>
 
+              {/* Post Rental Terms */}
+              <section>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  Post Rental Terms
+                </h2>
+                <div className="space-y-4 text-gray-600">
+                  <p>
+                    Posts remain property of Pink Posts Installations and are rented for the duration of your listing.
+                  </p>
+                  <div className="p-4 bg-pink-50 border border-pink-200 rounded-lg">
+                    <p className="text-gray-700">
+                      <strong>Extended Rental Fee:</strong> After the initial 6 months from your order date,
+                      a post rental charge of <strong>$18</strong> will be charged every 3 months until pickup
+                      is requested and completed.
+                    </p>
+                  </div>
+                  <p className="text-sm">
+                    The extended rental fee will be automatically charged to the credit card on file that was
+                    used for the original order.
+                  </p>
+                </div>
+              </section>
+
+              {/* Lost/Stolen/Damaged Items */}
+              <section>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  Lost, Stolen, or Damaged Items
+                </h2>
+                <div className="space-y-4 text-gray-600">
+                  <p>
+                    Items installed by Pink Posts Installations that are not available for pickup (lost, stolen,
+                    or damaged beyond repair) will result in a replacement fee charged to the credit card that
+                    processed the original order.
+                  </p>
+                  <div className="p-4 bg-gray-100 rounded-lg">
+                    <p className="font-semibold text-gray-800 mb-3">Replacement Fees:</p>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex justify-between py-2 border-b border-gray-200">
+                        <span>Posts</span>
+                        <span className="font-semibold text-gray-900">$100</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-200">
+                        <span>Riders</span>
+                        <span className="font-semibold text-gray-900">$15</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-200">
+                        <span>Brochure Box</span>
+                        <span className="font-semibold text-gray-900">$25</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-200">
+                        <span>Lockbox</span>
+                        <span className="font-semibold text-gray-900">$25</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm">
+                    Please notify us immediately if any installed items are missing or damaged so we can
+                    arrange for replacement.
+                  </p>
+                </div>
+              </section>
+
               {/* Contact */}
               <section className="pt-4 border-t border-gray-200">
                 <p className="text-gray-600">

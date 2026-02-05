@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils'
 
 const navLinks = [
   { href: '/posts', label: 'Posts' },
+  { href: '/riders', label: 'Riders' },
+  { href: '/lockboxes', label: 'Lockboxes' },
   { href: '/faq', label: 'FAQ' },
 ]
 

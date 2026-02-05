@@ -149,7 +149,7 @@ function CategoryAccordion({ category, isExpanded, onToggle }: {
           {category.riders.map(rider => (
             <div
               key={rider.id}
-              className="flex items-center justify-between p-3 rounded-lg border border-gray-200 bg-white"
+              className="flex flex-col items-center justify-center p-3 rounded-lg border border-gray-200 bg-white text-center"
             >
               <span className="text-sm font-medium text-gray-900">{rider.name}</span>
               <span className="text-xs font-medium text-pink-600">$5</span>

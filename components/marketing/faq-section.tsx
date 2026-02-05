@@ -14,7 +14,7 @@ const faqs = [
     id: 'service-areas',
     question: 'What areas do you serve?',
     answer:
-      'We currently serve the greater Lexington, Central Kentucky, Louisville, and Cincinnati and surrounding areas!',
+      'We currently serve the greater Lexington, Central Kentucky, Louisville, Cincinnati, and surrounding areas!',
   },
   {
     id: 'damaged-posts',

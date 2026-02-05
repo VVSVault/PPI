@@ -39,10 +39,27 @@ export async function POST(
         break
       }
       case 'rider': {
+        // Look up or create rider by name/type
+        let riderId = data.rider_id
+        if (!riderId && data.rider_type) {
+          // Find or create the rider in the catalog
+          let rider = await prisma.riderCatalog.findFirst({
+            where: { name: { equals: data.rider_type, mode: 'insensitive' } },
+          })
+          if (!rider) {
+            rider = await prisma.riderCatalog.create({
+              data: {
+                name: data.rider_type,
+                rentalPrice: 5.00,
+              },
+            })
+          }
+          riderId = rider.id
+        }
         result = await prisma.customerRider.create({
           data: {
             userId: customerId,
-            riderId: data.rider_id,
+            riderId: riderId,
             isOwned: data.is_owned ?? true,
             inStorage: data.in_storage ?? true,
           },
@@ -50,12 +67,24 @@ export async function POST(
         break
       }
       case 'lockbox': {
+        // Look up lockbox type by name if ID not provided
+        let lockboxTypeId = data.lockbox_type_id
+        if (!lockboxTypeId && data.lockbox_type) {
+          const lockboxType = await prisma.lockboxType.findFirst({
+            where: { name: { equals: data.lockbox_type, mode: 'insensitive' } },
+          })
+          if (lockboxType) {
+            lockboxTypeId = lockboxType.id
+          } else {
+            return NextResponse.json({ error: 'Invalid lockbox type' }, { status: 400 })
+          }
+        }
         result = await prisma.customerLockbox.create({
           data: {
             userId: customerId,
-            lockboxTypeId: data.lockbox_type_id,
+            lockboxTypeId: lockboxTypeId,
             serialNumber: data.serial_number,
-            code: data.code,
+            code: data.lockbox_code || data.code,
             isOwned: data.is_owned ?? true,
             inStorage: data.in_storage ?? true,
           },

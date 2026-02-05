@@ -11,15 +11,24 @@ export const CONTACT = {
 }
 
 // Service Areas
-export const SERVICE_AREAS = [
-  'Fayette County',
-  'Scott County',
-  'Woodford County',
-  'Jessamine County',
-  'Clark County',
-  'Madison County',
-  'Bourbon County',
-]
+export const SERVICE_AREAS = {
+  kentucky: [
+    'Fayette County',
+    'Scott County',
+    'Woodford County',
+    'Jessamine County',
+    'Clark County',
+    'Madison County',
+    'Bourbon County',
+    'Franklin County',
+  ],
+  ohio: [
+    'Hamilton County',
+    'Butler County',
+    'Warren County',
+    'Clermont County',
+  ],
+}
 
 // Post Types
 export const POST_TYPES = {
@@ -90,6 +99,7 @@ export const NAV_LINKS = {
   marketing: [
     { href: '/posts', label: 'Posts' },
     { href: '/riders', label: 'Riders' },
+    { href: '/lockboxes', label: 'Lockboxes' },
     { href: '/faq', label: 'FAQ' },
   ],
   dashboard: {

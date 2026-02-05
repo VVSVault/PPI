@@ -8,7 +8,7 @@ export const profileSchema = z.object({
 })
 
 export const propertySchema = z.object({
-  property_type: z.enum(['commercial', 'house', 'construction', 'multi_family', 'bare_land']),
+  property_type: z.enum(['commercial', 'residential', 'land', 'multi_family', 'house', 'construction', 'bare_land']),
   property_address: z.string().min(1, 'Street address is required'),
   property_city: z.string().min(1, 'City is required'),
   property_state: z.string().default('KY'),
@@ -20,7 +20,7 @@ export const propertySchema = z.object({
 
 export const orderItemSchema = z.object({
   item_type: z.enum(['post', 'sign', 'rider', 'lockbox', 'brochure_box', 'trip']),
-  item_category: z.enum(['rental', 'owned', 'new', 'storage']).optional(),
+  item_category: z.enum(['rental', 'owned', 'new', 'storage', 'purchase', 'install']).optional(),
   description: z.string(),
   quantity: z.number().min(1).default(1),
   unit_price: z.number().min(0),
@@ -40,6 +40,8 @@ export const createOrderSchema = z.object({
   is_expedited: z.boolean().default(false),
   payment_method_id: z.string().optional(),
   save_payment_method: z.boolean().default(false),
+  promo_code: z.string().optional(),
+  promo_code_id: z.string().optional(),
 })
 
 export const schedulingSchema = z.object({

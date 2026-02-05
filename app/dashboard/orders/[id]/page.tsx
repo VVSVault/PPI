@@ -43,7 +43,12 @@ interface Order {
   subtotal: number | string
   fuelSurcharge: number | string
   expediteFee: number | string
+  discount: number | string
+  tax: number | string
   total: number | string
+  promoCode?: {
+    code: string
+  } | null
   status: string
   paymentStatus: string
   createdAt: string
@@ -366,6 +371,12 @@ export default function OrderDetailsPage() {
                   <span className="text-gray-600">Subtotal</span>
                   <span className="text-gray-900">${Number(order.subtotal).toFixed(2)}</span>
                 </div>
+                {Number(order.discount) > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Discount{order.promoCode ? ` (${order.promoCode.code})` : ''}</span>
+                    <span>-${Number(order.discount).toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Fuel Surcharge</span>
                   <span className="text-gray-900">${Number(order.fuelSurcharge).toFixed(2)}</span>
@@ -374,6 +385,12 @@ export default function OrderDetailsPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Expedite Fee</span>
                     <span className="text-gray-900">${Number(order.expediteFee).toFixed(2)}</span>
+                  </div>
+                )}
+                {Number(order.tax) > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Sales Tax (6%)</span>
+                    <span className="text-gray-900">${Number(order.tax).toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-200">

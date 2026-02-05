@@ -208,6 +208,11 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <Link href={`/admin/orders/${order.id}`}>
+                          <Button variant="ghost" size="sm">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </Link>
                         <select
                           value={order.status}
                           onChange={(e) => updateOrderStatus(order.id, e.target.value)}

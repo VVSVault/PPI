@@ -276,7 +276,12 @@ model Order {
   subtotal          Decimal       @db.Decimal(10, 2)
   fuelSurcharge     Decimal       @default(2.47) @db.Decimal(10, 2) @map("fuel_surcharge")
   expediteFee       Decimal       @default(0) @db.Decimal(10, 2) @map("expedite_fee")
+  discount          Decimal       @default(0) @db.Decimal(10, 2)
+  tax               Decimal       @default(0) @db.Decimal(10, 2)
   total             Decimal       @db.Decimal(10, 2)
+
+  // Promo Code
+  promoCodeId       String?       @map("promo_code_id")
 
   // Status
   status            OrderStatus   @default(pending)
@@ -289,6 +294,7 @@ model Order {
 
   user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   postType          PostType      @relation(fields: [postTypeId], references: [id])
+  promoCode         PromoCode?    @relation(fields: [promoCodeId], references: [id])
   orderItems        OrderItem[]
   installation      Installation?
 
@@ -469,4 +475,33 @@ model PaymentMethod {
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("payment_methods")
+}
+
+// ============================================
+// Promo Codes
+// ============================================
+
+model PromoCode {
+  id              String    @id @default(cuid())
+  code            String    @unique
+  description     String?
+  discountType    DiscountType @default(percentage) @map("discount_type")
+  discountValue   Decimal   @db.Decimal(10, 2) @map("discount_value") // percentage or fixed amount
+  minOrderAmount  Decimal?  @db.Decimal(10, 2) @map("min_order_amount")
+  maxUses         Int?      @map("max_uses")
+  currentUses     Int       @default(0) @map("current_uses")
+  startsAt        DateTime? @map("starts_at")
+  expiresAt       DateTime? @map("expires_at")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  orders          Order[]
+
+  @@map("promo_codes")
+}
+
+enum DiscountType {
+  percentage
+  fixed
 }

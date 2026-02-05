@@ -20,7 +20,15 @@ export async function GET(request: NextRequest) {
       orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
     })
 
-    return NextResponse.json({ paymentMethods })
+    // Transform to expected format for frontend
+    const transformedMethods = paymentMethods.map((pm) => ({
+      id: pm.stripePaymentMethodId,
+      card_brand: pm.brand,
+      card_last4: pm.last4,
+      is_default: pm.isDefault,
+    }))
+
+    return NextResponse.json({ paymentMethods: transformedMethods })
   } catch (error) {
     console.error('Error fetching payment methods:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

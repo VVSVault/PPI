@@ -197,7 +197,7 @@ export default function AdminSettingsPage() {
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">Expedite Fee</span>
-                <span className="font-semibold text-gray-900">$25.00</span>
+                <span className="font-semibold text-gray-900">$50.00</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">Rider Install</span>
@@ -207,9 +207,13 @@ export default function AdminSettingsPage() {
                 <span className="text-gray-600">Rider Rental</span>
                 <span className="font-semibold text-gray-900">$5.00</span>
               </div>
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Sales Tax</span>
+                <span className="font-semibold text-gray-900">6%</span>
+              </div>
               <div className="flex items-center justify-between py-2">
                 <span className="text-gray-600">Service Area</span>
-                <span className="font-semibold text-gray-900">Kentucky</span>
+                <span className="font-semibold text-gray-900">Kentucky, Ohio</span>
               </div>
             </div>
           </CardContent>

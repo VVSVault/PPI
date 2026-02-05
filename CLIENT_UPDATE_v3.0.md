@@ -224,6 +224,14 @@ Images are displayed on:
 | `supabase/schema.sql` | Updated rental_price from 15.00 to 10.00 |
 | `prisma/seed.ts` | Updated rentalPrice from 15.00 to 10.00 |
 | `components/dashboard/sidebar.tsx` | Added "My Inventory" link with Package icon |
+| `.env.local` | Updated Stripe keys from test to live mode |
+
+### Environment Configuration
+
+**Stripe Payment Processing** has been configured for live payments:
+- Updated from test keys (`pk_test_...`, `sk_test_...`) to live keys (`pk_live_...`, `sk_live_...`)
+- Webhook secret updated for production
+- **Railway environment variables** must also be updated with live keys
 
 ### New Files
 
@@ -253,6 +261,7 @@ Images are displayed on:
 | Lockbox images | Added product images to homepage, dashboard, and lockboxes page |
 | Customer inventory page | New `/dashboard/inventory` page to view stored items |
 | Inventory sidebar link | Added "My Inventory" to dashboard navigation |
+| Stripe live mode | Payment processing configured with live Stripe keys |
 
 ---
 

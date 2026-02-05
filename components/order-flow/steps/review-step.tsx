@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { CreditCard, Lock, AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui'
+import { CreditCard, Lock, AlertCircle, Tag, CheckCircle, Loader2, Plus } from 'lucide-react'
+import { Button, Input } from '@/components/ui'
+import { AddCardModal } from '@/components/billing'
 import { cn } from '@/lib/utils'
 import type { StepProps } from '../types'
 import { PRICING } from '../types'
@@ -24,6 +25,17 @@ export function ReviewStep({
 }: StepProps) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
+  const [promoCodeInput, setPromoCodeInput] = useState(formData.promo_code || '')
+  const [promoCodeError, setPromoCodeError] = useState<string | null>(null)
+  const [promoCodeSuccess, setPromoCodeSuccess] = useState<string | null>(
+    formData.promo_code_id ? `Promo code "${formData.promo_code}" applied!` : null
+  )
+  const [applyingPromo, setApplyingPromo] = useState(false)
+  const [showAddCard, setShowAddCard] = useState(false)
+  const [localPaymentMethods, setLocalPaymentMethods] = useState(paymentMethods || [])
+  const [calculatedTax, setCalculatedTax] = useState<number | null>(null)
+  const [taxRate, setTaxRate] = useState<string>('6%') // Default display
+  const [loadingTax, setLoadingTax] = useState(false)
 
   // Calculate order items and totals
   const orderItems: Array<{ description: string; price: number }> = []
@@ -90,13 +102,186 @@ export function ReviewStep({
 
   const subtotal = orderItems.reduce((sum, item) => sum + item.price, 0)
   const expediteFee = formData.schedule_type === 'expedited' ? PRICING.expedite_fee : 0
-  const total = subtotal + PRICING.fuel_surcharge + expediteFee
+  const discount = formData.discount || 0
+  const discountedSubtotal = Math.max(0, subtotal - discount)
+  const taxableAmount = discountedSubtotal + expediteFee // Fuel surcharge typically not taxed
 
-  const defaultPaymentMethod = paymentMethods?.find((pm) => pm.is_default)
+  // Use calculated tax from Stripe Tax API, or fallback to default rate
+  const fallbackTax = Math.round(taxableAmount * PRICING.tax_rate * 100) / 100
+  const tax = calculatedTax !== null ? calculatedTax : fallbackTax
+  const total = discountedSubtotal + PRICING.fuel_surcharge + expediteFee + tax
+
+  // Build items for tax calculation (same structure used in submit)
+  const buildTaxItems = useCallback(() => {
+    const items: Array<{ item_type: string; total_price: number }> = []
+
+    if (formData.post_type) {
+      items.push({ item_type: 'post', total_price: PRICING.posts[formData.post_type] })
+    }
+    if (formData.sign_option === 'stored' || formData.sign_option === 'at_property') {
+      items.push({ item_type: 'sign', total_price: PRICING.sign_install })
+    }
+    formData.riders.forEach((rider) => {
+      const price = rider.is_rental ? PRICING.rider_rental : PRICING.rider_install
+      items.push({ item_type: 'rider', total_price: price })
+    })
+    if (formData.lockbox_option === 'sentrilock' || formData.lockbox_option === 'mechanical_own') {
+      items.push({ item_type: 'lockbox', total_price: PRICING.lockbox_install })
+    } else if (formData.lockbox_option === 'mechanical_rent') {
+      items.push({ item_type: 'lockbox', total_price: PRICING.lockbox_rental })
+    }
+    if (formData.brochure_option === 'purchase') {
+      items.push({ item_type: 'brochure_box', total_price: PRICING.brochure_box_purchase })
+    } else if (formData.brochure_option === 'own') {
+      items.push({ item_type: 'brochure_box', total_price: PRICING.brochure_box_install })
+    }
+
+    return items
+  }, [formData.post_type, formData.sign_option, formData.riders, formData.lockbox_option, formData.brochure_option])
+
+  // Fetch tax from Stripe Tax API
+  useEffect(() => {
+    const fetchTax = async () => {
+      // Only calculate if we have address info and items
+      if (!formData.property_city || !formData.property_state || !formData.property_zip) {
+        return
+      }
+
+      const items = buildTaxItems()
+      if (items.length === 0) {
+        return
+      }
+
+      setLoadingTax(true)
+      try {
+        const res = await fetch('/api/tax/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items,
+            expedite_fee: expediteFee,
+            discount: discount,
+            address: {
+              line1: formData.property_address,
+              city: formData.property_city,
+              state: formData.property_state,
+              postal_code: formData.property_zip,
+            },
+          }),
+        })
+
+        if (res.ok) {
+          const data = await res.json()
+          setCalculatedTax(data.tax)
+          if (data.tax_rate) {
+            setTaxRate(`${(data.tax_rate * 100).toFixed(1)}%`)
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching tax:', err)
+        // Keep using fallback tax
+      } finally {
+        setLoadingTax(false)
+      }
+    }
+
+    fetchTax()
+  }, [
+    formData.property_address,
+    formData.property_city,
+    formData.property_state,
+    formData.property_zip,
+    expediteFee,
+    discount,
+    buildTaxItems,
+  ])
+
+  // Handle promo code application
+  const handleApplyPromoCode = async () => {
+    if (!promoCodeInput.trim()) {
+      setPromoCodeError('Please enter a promo code')
+      return
+    }
+
+    setApplyingPromo(true)
+    setPromoCodeError(null)
+    setPromoCodeSuccess(null)
+
+    try {
+      const res = await fetch('/api/promo-codes/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: promoCodeInput.trim(),
+          subtotal,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Invalid promo code')
+      }
+
+      updateFormData({
+        promo_code: data.promoCode.code,
+        promo_code_id: data.promoCode.id,
+        discount: data.discount,
+      })
+      setPromoCodeSuccess(`Promo code "${data.promoCode.code}" applied! You save $${data.discount.toFixed(2)}`)
+    } catch (err) {
+      setPromoCodeError(err instanceof Error ? err.message : 'Failed to apply promo code')
+    } finally {
+      setApplyingPromo(false)
+    }
+  }
+
+  const handleRemovePromoCode = () => {
+    updateFormData({
+      promo_code: undefined,
+      promo_code_id: undefined,
+      discount: undefined,
+    })
+    setPromoCodeInput('')
+    setPromoCodeSuccess(null)
+    setPromoCodeError(null)
+  }
+
+  // Use local state that can be updated after adding a card
+  const activePaymentMethods = localPaymentMethods.length > 0 ? localPaymentMethods : paymentMethods
+  const defaultPaymentMethod = activePaymentMethods?.find((pm) => pm.is_default)
+
+  // Handler for when a new card is added
+  const handleCardAdded = async () => {
+    setShowAddCard(false)
+    try {
+      const res = await fetch('/api/payments/methods')
+      if (res.ok) {
+        const data = await res.json()
+        setLocalPaymentMethods(data.paymentMethods || [])
+        // Auto-select the newly added card if it's the first one
+        if (data.paymentMethods?.length > 0 && !formData.payment_method_id) {
+          const defaultCard = data.paymentMethods.find((pm: { is_default: boolean }) => pm.is_default)
+          if (defaultCard) {
+            updateFormData({ payment_method_id: defaultCard.id })
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching payment methods:', err)
+    }
+  }
 
   const handleSubmit = async () => {
     if (!formData.post_type) {
       setError('Please select a post type')
+      return
+    }
+
+    // Check for payment method
+    const selectedPaymentMethodId = formData.payment_method_id || defaultPaymentMethod?.id
+    if (!selectedPaymentMethodId) {
+      setError('Please add a payment method before placing your order')
       return
     }
 
@@ -246,6 +431,8 @@ export function ReviewStep({
           is_expedited: formData.schedule_type === 'expedited',
           payment_method_id: formData.payment_method_id || defaultPaymentMethod?.id,
           save_payment_method: formData.save_payment_method,
+          promo_code: formData.promo_code,
+          promo_code_id: formData.promo_code_id,
         }),
       })
 
@@ -304,12 +491,68 @@ export function ReviewStep({
           ))}
         </div>
 
+        {/* Promo Code */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="flex items-center gap-2 mb-2">
+            <Tag className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Promo Code</span>
+          </div>
+          {formData.promo_code_id ? (
+            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className="text-sm text-green-800">
+                  <strong>{formData.promo_code}</strong> - You save ${discount.toFixed(2)}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemovePromoCode}
+                className="text-sm text-green-700 hover:text-green-900 underline"
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Enter promo code"
+                value={promoCodeInput}
+                onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleApplyPromoCode}
+                disabled={applyingPromo || !promoCodeInput.trim()}
+              >
+                {applyingPromo ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  'Apply'
+                )}
+              </Button>
+            </div>
+          )}
+          {promoCodeError && (
+            <p className="mt-2 text-sm text-red-600">{promoCodeError}</p>
+          )}
+        </div>
+
         {/* Totals */}
         <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Subtotal</span>
             <span className="text-gray-900">${subtotal.toFixed(2)}</span>
           </div>
+          {discount > 0 && (
+            <div className="flex justify-between text-sm text-green-600">
+              <span>Discount ({formData.promo_code})</span>
+              <span>-${discount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Fuel Surcharge</span>
             <span className="text-gray-900">${PRICING.fuel_surcharge.toFixed(2)}</span>
@@ -320,6 +563,13 @@ export function ReviewStep({
               <span className="text-gray-900">${expediteFee.toFixed(2)}</span>
             </div>
           )}
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">
+              Sales Tax ({taxRate})
+              {loadingTax && <Loader2 className="w-3 h-3 inline ml-1 animate-spin" />}
+            </span>
+            <span className="text-gray-900">${tax.toFixed(2)}</span>
+          </div>
           <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-200">
             <span className="text-gray-900">Total</span>
             <span className="text-pink-600">${total.toFixed(2)}</span>
@@ -329,14 +579,28 @@ export function ReviewStep({
 
       {/* Payment Method */}
       <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <CreditCard className="w-5 h-5" />
-          Payment Method
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+            <CreditCard className="w-5 h-5" />
+            Payment Method
+          </h3>
+          {activePaymentMethods && activePaymentMethods.length > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAddCard(true)}
+              className="text-pink-600 hover:text-pink-700"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Add Card
+            </Button>
+          )}
+        </div>
 
-        {paymentMethods && paymentMethods.length > 0 ? (
+        {activePaymentMethods && activePaymentMethods.length > 0 ? (
           <div className="space-y-3">
-            {paymentMethods.map((pm) => (
+            {activePaymentMethods.map((pm) => (
               <button
                 key={pm.id}
                 type="button"
@@ -361,21 +625,32 @@ export function ReviewStep({
             ))}
           </div>
         ) : (
-          <div className="text-center py-6 text-gray-500">
-            <p>No saved payment methods.</p>
-            <p className="text-sm mt-1">You&apos;ll be redirected to add a card after clicking &quot;Place Order&quot;.</p>
+          <div className="text-center py-6">
+            <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-700 font-medium mb-1">No payment method on file</p>
+            <p className="text-sm text-gray-500 mb-4">Add a card to complete your order</p>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => setShowAddCard(true)}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Payment Method
+            </Button>
           </div>
         )}
 
-        <label className="flex items-center gap-2 mt-4 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={formData.save_payment_method}
-            onChange={(e) => updateFormData({ save_payment_method: e.target.checked })}
-            className="w-4 h-4 text-pink-500 border-gray-300 rounded focus:ring-pink-500"
-          />
-          <span className="text-sm text-gray-600">Save card for future orders</span>
-        </label>
+        {activePaymentMethods && activePaymentMethods.length > 0 && (
+          <label className="flex items-center gap-2 mt-4 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.save_payment_method}
+              onChange={(e) => updateFormData({ save_payment_method: e.target.checked })}
+              className="w-4 h-4 text-pink-500 border-gray-300 rounded focus:ring-pink-500"
+            />
+            <span className="text-sm text-gray-600">Save card for future orders</span>
+          </label>
+        )}
       </div>
 
       {/* Disclosure & Terms */}
@@ -410,10 +685,17 @@ export function ReviewStep({
         size="lg"
         className="w-full"
         onClick={handleSubmit}
-        disabled={isSubmitting}
+        disabled={isSubmitting || (!activePaymentMethods?.length && !formData.payment_method_id)}
       >
         {isSubmitting ? 'Processing...' : `Place Order — $${total.toFixed(2)}`}
       </Button>
+
+      {/* Add Card Modal */}
+      <AddCardModal
+        isOpen={showAddCard}
+        onClose={() => setShowAddCard(false)}
+        onSuccess={handleCardAdded}
+      />
     </div>
   )
 }
