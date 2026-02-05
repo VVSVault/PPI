@@ -92,6 +92,8 @@ export const PRICING = {
     purchase: 23,
     install: 2,
   },
+  serviceTrip: 40, // Trip fee for service visits (adding accessories, etc.)
+  expedite: 50, // Same-day service fee
 }
 
 // Navigation Links

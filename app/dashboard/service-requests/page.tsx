@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { Header } from '@/components/dashboard'
-import { Card, CardContent, Badge, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui'
+import { Card, CardContent, Badge, Tabs, TabsList, TabsTrigger, TabsContent, Button } from '@/components/ui'
+import { ScheduleTripModal } from '@/components/dashboard/installation-modals'
 import {
   Loader2,
   MapPin,
@@ -15,6 +16,7 @@ import {
   Trash2,
   RefreshCw,
   FileText,
+  Truck,
 } from 'lucide-react'
 
 interface ServiceRequest {
@@ -66,29 +68,30 @@ export default function ServiceRequestsPage() {
   const [counts, setCounts] = useState<StatusCounts | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showTripModal, setShowTripModal] = useState(false)
+
+  const fetchRequests = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/service-requests')
+      if (!res.ok) {
+        throw new Error('Failed to fetch service requests')
+      }
+
+      const data = await res.json()
+      setRequests(data.serviceRequests || [])
+      setCounts(data.counts || null)
+    } catch (err) {
+      console.error('Error fetching service requests:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load service requests')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function fetchRequests() {
-      setLoading(true)
-      setError(null)
-
-      try {
-        const res = await fetch('/api/service-requests')
-        if (!res.ok) {
-          throw new Error('Failed to fetch service requests')
-        }
-
-        const data = await res.json()
-        setRequests(data.serviceRequests || [])
-        setCounts(data.counts || null)
-      } catch (err) {
-        console.error('Error fetching service requests:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load service requests')
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchRequests()
   }, [])
 
@@ -223,6 +226,14 @@ export default function ServiceRequestsPage() {
       <Header title="Service Requests" />
 
       <div className="p-6">
+        {/* Action Button */}
+        <div className="flex justify-end mb-6">
+          <Button onClick={() => setShowTripModal(true)}>
+            <Truck className="w-4 h-4 mr-2" />
+            Schedule a Trip
+          </Button>
+        </div>
+
         {/* Summary Cards */}
         {counts && counts.total > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
@@ -315,6 +326,16 @@ export default function ServiceRequestsPage() {
           </Tabs>
         )}
       </div>
+
+      {/* Schedule Trip Modal */}
+      <ScheduleTripModal
+        isOpen={showTripModal}
+        onClose={() => setShowTripModal(false)}
+        onSuccess={() => {
+          setShowTripModal(false)
+          fetchRequests()
+        }}
+      />
     </div>
   )
 }

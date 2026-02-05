@@ -1,6 +1,107 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth-utils'
+import { createNotification } from '@/lib/notifications'
+
+// POST - Create a service request for an unlisted address
+// This is used when the system doesn't show an existing installation
+export async function POST(request: NextRequest) {
+  try {
+    const user = await getCurrentUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { type, description, requested_date, notes, address } = body
+
+    if (!type || !description) {
+      return NextResponse.json(
+        { error: 'Type and description are required' },
+        { status: 400 }
+      )
+    }
+
+    // For unlisted addresses, we need to find or create an installation placeholder
+    // First, check if user has any existing installations at this address
+    let installation = null
+    if (address) {
+      installation = await prisma.installation.findFirst({
+        where: {
+          userId: user.id,
+          propertyAddress: { contains: address.street, mode: 'insensitive' },
+          propertyCity: { contains: address.city, mode: 'insensitive' },
+        },
+      })
+    }
+
+    // If no installation found and we have address info, check if user has ANY installation
+    // and include address info in the notes
+    if (!installation) {
+      // Get user's first installation to link to (if any)
+      installation = await prisma.installation.findFirst({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+      })
+    }
+
+    if (!installation) {
+      // User has no installations at all - they need to place an order first
+      // or contact support directly
+      return NextResponse.json(
+        { error: 'No installations found. Please contact support for assistance with unlisted addresses.' },
+        { status: 400 }
+      )
+    }
+
+    // Create the service request
+    // Include address info in description/notes if it's an unlisted address
+    const fullDescription = address
+      ? `${description}\n\n[Unlisted Address: ${address.street}, ${address.city}, ${address.state} ${address.zip}]`
+      : description
+
+    const serviceRequest = await prisma.serviceRequest.create({
+      data: {
+        installationId: installation.id,
+        userId: user.id,
+        type: type as any,
+        description: fullDescription,
+        requestedDate: requested_date ? new Date(requested_date) : null,
+        notes: notes || null,
+      },
+      include: {
+        installation: {
+          select: {
+            propertyAddress: true,
+            propertyCity: true,
+          },
+        },
+      },
+    })
+
+    // Create notification for the user
+    await createNotification({
+      userId: user.id,
+      type: 'service_request_acknowledged',
+      title: 'Service Request Submitted',
+      message: `Your ${type} request has been submitted and will be reviewed.`,
+      link: '/dashboard/service-requests',
+    })
+
+    return NextResponse.json({
+      serviceRequest: {
+        id: serviceRequest.id,
+        type: serviceRequest.type,
+        status: serviceRequest.status,
+        description: serviceRequest.description,
+      },
+    }, { status: 201 })
+  } catch (error) {
+    console.error('Error creating service request:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
