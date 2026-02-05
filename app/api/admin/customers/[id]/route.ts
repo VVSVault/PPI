@@ -28,7 +28,7 @@ export async function GET(
     }
 
     // Get all inventory and related data
-    const [signs, riders, lockboxes, brochureBoxes, orders, installations] =
+    const [signsRaw, ridersRaw, lockboxesRaw, brochureBoxesRaw, ordersRaw, installationsRaw] =
       await Promise.all([
         prisma.customerSign.findMany({
           where: { userId: id },
@@ -60,14 +60,59 @@ export async function GET(
         }),
       ])
 
+    // Transform data to match frontend expectations
+    const signs = signsRaw.map((sign) => ({
+      id: sign.id,
+      description: sign.description,
+      size: null,
+      quantity: 1,
+    }))
+
+    const riders = ridersRaw.map((r) => ({
+      id: r.id,
+      rider_type: r.rider.name,
+      quantity: 1,
+    }))
+
+    const lockboxes = lockboxesRaw.map((lb) => ({
+      id: lb.id,
+      lockbox_type: lb.lockboxType.name,
+      lockbox_code: lb.code,
+      quantity: 1,
+    }))
+
+    // Aggregate brochure boxes into a single count
+    const brochureBoxes = brochureBoxesRaw.length > 0
+      ? { id: brochureBoxesRaw[0].id, quantity: brochureBoxesRaw.length }
+      : null
+
+    // Transform orders to match frontend expectations
+    const orders = ordersRaw.map((order) => ({
+      id: order.id,
+      order_number: order.orderNumber,
+      status: order.status,
+      total: Number(order.total),
+      created_at: order.createdAt.toISOString(),
+    }))
+
+    // Transform installations
+    const installations = installationsRaw.map((inst) => ({
+      id: inst.id,
+      address: inst.propertyAddress,
+      city: inst.propertyCity,
+      post_type: 'Standard',
+      status: inst.status,
+      installation_date: inst.installedAt.toISOString(),
+    }))
+
     return NextResponse.json({
       customer: {
         id: customer.id,
         email: customer.email,
         full_name: customer.fullName,
         phone: customer.phone,
-        company: customer.company,
-        created_at: customer.createdAt,
+        company_name: customer.company,
+        license_number: null,
       },
       inventory: {
         signs,
