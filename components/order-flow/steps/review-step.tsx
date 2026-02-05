@@ -613,10 +613,10 @@ export function ReviewStep({
                 )}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-6 bg-gray-100 rounded flex items-center justify-center text-xs font-medium text-gray-600 uppercase">
-                    {pm.card_brand}
-                  </div>
-                  <span className="text-gray-900">•••• {pm.card_last4}</span>
+                  <span className="text-sm font-medium text-gray-700 uppercase">
+                    {pm.card_brand}••••
+                  </span>
+                  <span className="text-gray-900">{pm.card_last4}</span>
                   {pm.is_default && (
                     <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded">Default</span>
                   )}
