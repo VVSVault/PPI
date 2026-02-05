@@ -62,14 +62,26 @@ export async function POST(request: NextRequest) {
         country: 'US',
       })
 
-      tax = taxResult.taxAmountExclusive / 100 // Convert back from cents
-      taxMethod = 'stripe_tax'
+      const stripeTax = taxResult.taxAmountExclusive / 100 // Convert back from cents
 
-      // Extract jurisdiction and rate from breakdown
-      if (taxResult.taxBreakdown.length > 0) {
-        const primaryTax = taxResult.taxBreakdown[0]
-        jurisdiction = primaryTax.jurisdiction
-        taxRate = parseFloat(primaryTax.rate) / 100
+      // If Stripe Tax returns 0 (e.g., services classified as non-taxable), use fallback rate
+      // Pink Posts charges 6% on all orders as a business decision
+      if (stripeTax > 0) {
+        tax = stripeTax
+        taxMethod = 'stripe_tax'
+
+        // Extract jurisdiction and rate from breakdown
+        if (taxResult.taxBreakdown.length > 0) {
+          const primaryTax = taxResult.taxBreakdown[0]
+          jurisdiction = primaryTax.jurisdiction
+          taxRate = parseFloat(primaryTax.rate) / 100
+        }
+      } else {
+        // Stripe Tax returned 0, use fallback
+        tax = Math.round(taxableAmount * FALLBACK_TAX_RATE * 100) / 100
+        taxRate = FALLBACK_TAX_RATE
+        taxMethod = 'fallback'
+        jurisdiction = 'Kentucky (6% applied)'
       }
     } catch (taxError) {
       // Fallback to manual calculation

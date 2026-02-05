@@ -129,9 +129,19 @@ export async function POST(request: NextRequest) {
         country: 'US',
       })
 
-      tax = taxResult.taxAmountExclusive / 100 // Convert back from cents
-      taxCalculationMethod = 'stripe_tax'
-      console.log('Stripe Tax calculated:', { tax, breakdown: taxResult.taxBreakdown })
+      const stripeTax = taxResult.taxAmountExclusive / 100 // Convert back from cents
+
+      // If Stripe Tax returns 0 (e.g., services classified as non-taxable), use fallback
+      // Pink Posts charges 6% on all orders as a business decision
+      if (stripeTax > 0) {
+        tax = stripeTax
+        taxCalculationMethod = 'stripe_tax'
+        console.log('Stripe Tax calculated:', { tax, breakdown: taxResult.taxBreakdown })
+      } else {
+        tax = Math.round(taxableAmount * FALLBACK_TAX_RATE * 100) / 100
+        taxCalculationMethod = 'fallback'
+        console.log('Stripe Tax returned 0, using fallback:', { tax })
+      }
     } catch (taxError) {
       // Fallback to manual calculation if Stripe Tax fails
       console.warn('Stripe Tax calculation failed, using fallback rate:', taxError)
