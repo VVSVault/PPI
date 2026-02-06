@@ -421,6 +421,12 @@ export function ReviewStep({
           installation_location: formData.installation_location,
           installation_location_image: formData.installation_location_image,
           installation_notes: formData.installation_notes,
+          // Installation details
+          is_gated_community: formData.is_gated_community,
+          gate_code: formData.gate_code,
+          has_marker_placed: formData.has_marker_placed,
+          sign_orientation: formData.sign_orientation,
+          sign_orientation_other: formData.sign_orientation_other,
           post_type: formData.post_type,
           items,
           requested_date: formData.requested_date,

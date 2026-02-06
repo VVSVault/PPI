@@ -211,6 +211,13 @@ export async function POST(request: NextRequest) {
         propertyZip: orderData.property_zip,
         propertyNotes: orderData.installation_notes,
         installationLocationImage: orderData.installation_location_image,
+        // Installation details
+        isGatedCommunity: orderData.is_gated_community || false,
+        gateCode: orderData.gate_code,
+        hasMarkerPlaced: orderData.has_marker_placed || false,
+        signOrientation: orderData.sign_orientation,
+        signOrientationOther: orderData.sign_orientation_other,
+        installationLocation: orderData.installation_location,
         scheduledDate: orderData.requested_date ? new Date(orderData.requested_date) : null,
         isExpedited: orderData.is_expedited,
         subtotal,

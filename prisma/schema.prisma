@@ -268,6 +268,14 @@ model Order {
   propertyNotes     String?       @map("property_notes")
   installationLocationImage String? @map("installation_location_image") @db.Text
 
+  // Installation details
+  isGatedCommunity  Boolean       @default(false) @map("is_gated_community")
+  gateCode          String?       @map("gate_code")
+  hasMarkerPlaced   Boolean       @default(false) @map("has_marker_placed")
+  signOrientation   String?       @map("sign_orientation")
+  signOrientationOther String?    @map("sign_orientation_other")
+  installationLocation String?    @map("installation_location")
+
   // Scheduling
   scheduledDate     DateTime?     @map("scheduled_date")
   isExpedited       Boolean       @default(false) @map("is_expedited")

@@ -42,6 +42,14 @@ interface Order {
   propertyNotes: string | null
   scheduledDate: string | null
   isExpedited: boolean
+  // Installation details
+  isGatedCommunity: boolean
+  gateCode: string | null
+  hasMarkerPlaced: boolean
+  signOrientation: string | null
+  signOrientationOther: string | null
+  installationLocation: string | null
+  installationLocationImage: string | null
   subtotal: number | string
   fuelSurcharge: number | string
   expediteFee: number | string
@@ -345,8 +353,60 @@ export default function AdminOrderDetailPage() {
               </div>
               {order.propertyNotes && (
                 <div className="mt-4 pt-4 border-t border-gray-100">
-                  <p className="text-sm text-gray-500 mb-1">Installation Notes</p>
+                  <p className="text-sm text-gray-500 mb-1">Special Instructions</p>
                   <p className="text-gray-700">{order.propertyNotes}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Installation Details */}
+          <Card variant="bordered">
+            <CardContent className="p-6">
+              <h2 className="font-semibold text-gray-900 mb-4">Installation Details</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Gated Community</p>
+                  <p className="font-medium text-gray-900">
+                    {order.isGatedCommunity ? 'Yes' : 'No'}
+                    {order.isGatedCommunity && order.gateCode && (
+                      <span className="ml-2 text-gray-600">
+                        (Code: {order.gateCode})
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Marker Placed</p>
+                  <p className="font-medium text-gray-900">
+                    {order.hasMarkerPlaced ? 'Yes' : 'No'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Sign Orientation</p>
+                  <p className="font-medium text-gray-900 capitalize">
+                    {order.signOrientation === 'other' && order.signOrientationOther
+                      ? order.signOrientationOther
+                      : order.signOrientation?.replace('_', ' ') || 'Not specified'}
+                  </p>
+                </div>
+                {order.installationLocation && (
+                  <div>
+                    <p className="text-sm text-gray-500">Installation Location</p>
+                    <p className="font-medium text-gray-900">
+                      {order.installationLocation}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {order.installationLocationImage && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-sm text-gray-500 mb-2">Location Image</p>
+                  <img
+                    src={order.installationLocationImage}
+                    alt="Installation location"
+                    className="w-48 h-48 object-cover rounded-lg border border-gray-200"
+                  />
                 </div>
               )}
             </CardContent>

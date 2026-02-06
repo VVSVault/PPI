@@ -42,6 +42,12 @@ export const createOrderSchema = z.object({
   save_payment_method: z.boolean().default(false),
   promo_code: z.string().optional(),
   promo_code_id: z.string().optional(),
+  // Installation details
+  is_gated_community: z.boolean().default(false),
+  gate_code: z.string().optional(),
+  has_marker_placed: z.boolean().default(false),
+  sign_orientation: z.string().optional(),
+  sign_orientation_other: z.string().optional(),
 })
 
 export const schedulingSchema = z.object({
