@@ -82,10 +82,12 @@ export async function POST(request: NextRequest) {
         discount = Math.round(discount * 100) / 100
         promoCodeId = promoCode.id
 
-        // Increment promo code usage
-        await prisma.promoCode.update({
-          where: { id: promoCode.id },
-          data: { currentUses: { increment: 1 } },
+        // Record per-customer promo code usage
+        await prisma.promoCodeUsage.create({
+          data: {
+            userId: user.id,
+            promoCodeId: promoCode.id,
+          },
         })
       }
     }

@@ -39,9 +39,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'This promo code has expired' }, { status: 400 })
     }
 
-    // Check if max uses has been reached
-    if (promoCode.maxUses && promoCode.currentUses >= promoCode.maxUses) {
-      return NextResponse.json({ error: 'This promo code has reached its usage limit' }, { status: 400 })
+    // Check if user has exceeded their max uses for this code
+    if (promoCode.maxUses) {
+      const userUsageCount = await prisma.promoCodeUsage.count({
+        where: {
+          userId: user.id,
+          promoCodeId: promoCode.id,
+        },
+      })
+      if (userUsageCount >= promoCode.maxUses) {
+        return NextResponse.json({ error: 'You have already used this promo code the maximum number of times' }, { status: 400 })
+      }
     }
 
     // Check minimum order amount

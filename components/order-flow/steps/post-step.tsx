@@ -7,14 +7,6 @@ import { PRICING } from '../types'
 
 const posts = [
   {
-    value: 'Test Post' as const,
-    name: 'Test Post ($1)',
-    description: 'For testing only - remove after testing complete.',
-    price: PRICING.posts['Test Post'],
-    image: '/images/posts/pink-post.png',
-    test: true,
-  },
-  {
     value: 'White Vinyl Post' as const,
     name: 'White Vinyl Post',
     description: 'Classic white vinyl post. Professional, clean look that complements any property.',

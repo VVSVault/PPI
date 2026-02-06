@@ -61,18 +61,6 @@ async function main() {
         isActive: true,
       },
     }),
-    // TODO: Remove Test Post after testing is complete
-    prisma.postType.upsert({
-      where: { name: 'Test Post' },
-      update: {},
-      create: {
-        name: 'Test Post',
-        description: 'For testing only - $1 post to verify order flow',
-        price: 1.00,
-        imageUrl: '/images/posts/pink-post.png',
-        isActive: true,
-      },
-    }),
   ])
   console.log(`Created ${postTypes.length} post types`)
 
@@ -162,22 +150,6 @@ async function main() {
     }),
   ])
   console.log(`Created ${lockboxTypes.length} lockbox types`)
-
-  // Create test promo codes
-  const promoCodes = await Promise.all([
-    prisma.promoCode.upsert({
-      where: { code: 'TESTFUEL' },
-      update: {},
-      create: {
-        code: 'TESTFUEL',
-        description: 'Waives fuel surcharge for testing',
-        discountType: 'fixed',
-        discountValue: 2.47, // Matches fuel surcharge amount
-        isActive: true,
-      },
-    }),
-  ])
-  console.log(`Created ${promoCodes.length} promo codes`)
 
   // Create admin user
   const hashedPassword = await bcrypt.hash('admin123', 12)

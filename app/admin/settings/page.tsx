@@ -31,12 +31,11 @@ interface PromoCode {
   discountType: 'percentage' | 'fixed'
   discountValue: number
   minOrderAmount: number | null
-  maxUses: number | null
-  currentUses: number
+  maxUses: number | null // Max uses per customer
   startsAt: string | null
   expiresAt: string | null
   isActive: boolean
-  _count?: { orders: number }
+  _count?: { orders: number; usages: number }
 }
 
 export default function AdminSettingsPage() {
@@ -474,7 +473,7 @@ export default function AdminSettingsPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Max Uses (optional)
+                      Max Uses Per Customer (optional)
                     </label>
                     <Input
                       type="number"
@@ -572,8 +571,12 @@ export default function AdminSettingsPage() {
                         </td>
                         <td className="py-3 px-2">
                           <span className="text-gray-600">
-                            {promo.currentUses}
-                            {promo.maxUses ? ` / ${promo.maxUses}` : ''}
+                            {promo._count?.orders || 0} orders
+                            {promo.maxUses && (
+                              <span className="text-gray-400 text-xs ml-1">
+                                (max {promo.maxUses}/customer)
+                              </span>
+                            )}
                           </span>
                         </td>
                         <td className="py-3 px-2">
