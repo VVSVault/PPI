@@ -53,7 +53,10 @@ export async function POST(request: NextRequest) {
 
       const resend = new Resend(process.env.RESEND_API_KEY)
 
-      await resend.emails.send({
+      console.log('Attempting to send test email to:', process.env.ADMIN_EMAIL)
+      console.log('Using API key starting with:', process.env.RESEND_API_KEY?.substring(0, 10) + '...')
+
+      const { data, error } = await resend.emails.send({
         from: 'Pink Posts Installations <orders@pinkposts.com>',
         to: process.env.ADMIN_EMAIL,
         subject: 'Test Email - Pink Posts Installations',
@@ -78,7 +81,14 @@ export async function POST(request: NextRequest) {
         `,
       })
 
-      return NextResponse.json({ success: true, message: 'Test email sent successfully' })
+      console.log('Resend response - data:', data, 'error:', error)
+
+      if (error) {
+        console.error('Resend error:', error)
+        return NextResponse.json({ error: error.message }, { status: 400 })
+      }
+
+      return NextResponse.json({ success: true, message: 'Test email sent successfully', emailId: data?.id })
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
