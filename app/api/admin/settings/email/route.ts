@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       resendConfigured,
       adminEmail,
-      fromEmail: 'orders@pinkpostinstallations.com',
+      fromEmail: 'orders@pinkposts.com',
     })
   } catch (error) {
     console.error('Error fetching email settings:', error)
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       const resend = new Resend(process.env.RESEND_API_KEY)
 
       await resend.emails.send({
-        from: 'Pink Posts Installations <orders@pinkpostinstallations.com>',
+        from: 'Pink Posts Installations <orders@pinkposts.com>',
         to: process.env.ADMIN_EMAIL,
         subject: 'Test Email - Pink Posts Installations',
         html: `
