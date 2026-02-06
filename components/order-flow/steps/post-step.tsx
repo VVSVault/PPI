@@ -7,24 +7,24 @@ import { PRICING } from '../types'
 
 const posts = [
   {
-    value: 'white-vinyl' as const,
+    value: 'White Vinyl Post' as const,
     name: 'White Vinyl Post',
     description: 'Classic white vinyl post. Professional, clean look that complements any property.',
-    price: PRICING.posts['white-vinyl'],
+    price: PRICING.posts['White Vinyl Post'],
     image: '/images/posts/white-post.png',
   },
   {
-    value: 'black-vinyl' as const,
+    value: 'Black Vinyl Post' as const,
     name: 'Black Vinyl Post',
     description: 'Modern black vinyl post. Sleek, contemporary style for upscale listings.',
-    price: PRICING.posts['black-vinyl'],
+    price: PRICING.posts['Black Vinyl Post'],
     image: '/images/posts/black-post.png',
   },
   {
-    value: 'pink-vinyl' as const,
+    value: 'Signature Pink Post' as const,
     name: 'Signature Pink Vinyl Post',
     description: 'Our signature pink post. Stand out from the crowd and get noticed!',
-    price: PRICING.posts['pink-vinyl'],
+    price: PRICING.posts['Signature Pink Post'],
     image: '/images/posts/pink-post.png',
     featured: true,
   },

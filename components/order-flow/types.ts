@@ -27,7 +27,7 @@ export interface OrderFormData {
   sign_orientation_other?: string
 
   // Post Selection
-  post_type: 'white-vinyl' | 'black-vinyl' | 'pink-vinyl' | undefined
+  post_type: 'White Vinyl Post' | 'Black Vinyl Post' | 'Signature Pink Post' | undefined
 
   // Sign Selection
   sign_option: 'stored' | 'at_property' | 'none'
@@ -82,9 +82,9 @@ export interface StepProps {
 
 export const PRICING = {
   posts: {
-    'white-vinyl': 55,
-    'black-vinyl': 55,
-    'pink-vinyl': 65,
+    'White Vinyl Post': 55,
+    'Black Vinyl Post': 55,
+    'Signature Pink Post': 65,
   },
   sign_install: 3,
   rider_rental: 5,

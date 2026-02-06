@@ -9,11 +9,7 @@ import { cn } from '@/lib/utils'
 import type { StepProps } from '../types'
 import { PRICING } from '../types'
 
-const postNames: Record<string, string> = {
-  'white-vinyl': 'White Vinyl Post',
-  'black-vinyl': 'Black Vinyl Post',
-  'pink-vinyl': 'Signature Pink Vinyl Post',
-}
+// Post type values are now the display names themselves
 
 export function ReviewStep({
   formData,
@@ -43,7 +39,7 @@ export function ReviewStep({
   // Post
   if (formData.post_type) {
     orderItems.push({
-      description: `${postNames[formData.post_type]} (install & pickup)`,
+      description: `${formData.post_type} (install & pickup)`,
       price: PRICING.posts[formData.post_type],
     })
   }
@@ -309,7 +305,7 @@ export function ReviewStep({
         items.push({
           item_type: 'post',
           item_category: 'new',
-          description: `${postNames[formData.post_type]} (install & pickup)`,
+          description: `${formData.post_type} (install & pickup)`,
           quantity: 1,
           unit_price: PRICING.posts[formData.post_type],
           total_price: PRICING.posts[formData.post_type],
