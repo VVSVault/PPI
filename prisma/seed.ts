@@ -163,6 +163,22 @@ async function main() {
   ])
   console.log(`Created ${lockboxTypes.length} lockbox types`)
 
+  // Create test promo codes
+  const promoCodes = await Promise.all([
+    prisma.promoCode.upsert({
+      where: { code: 'TESTFUEL' },
+      update: {},
+      create: {
+        code: 'TESTFUEL',
+        description: 'Waives fuel surcharge for testing',
+        discountType: 'fixed',
+        discountValue: 2.47, // Matches fuel surcharge amount
+        isActive: true,
+      },
+    }),
+  ])
+  console.log(`Created ${promoCodes.length} promo codes`)
+
   // Create admin user
   const hashedPassword = await bcrypt.hash('admin123', 12)
   const adminUser = await prisma.user.upsert({
