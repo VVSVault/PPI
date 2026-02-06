@@ -61,6 +61,18 @@ async function main() {
         isActive: true,
       },
     }),
+    // TODO: Remove Test Post after testing is complete
+    prisma.postType.upsert({
+      where: { name: 'Test Post' },
+      update: {},
+      create: {
+        name: 'Test Post',
+        description: 'For testing only - $1 post to verify order flow',
+        price: 1.00,
+        imageUrl: '/images/posts/pink-post.png',
+        isActive: true,
+      },
+    }),
   ])
   console.log(`Created ${postTypes.length} post types`)
 

@@ -332,6 +332,9 @@ enum PropertyType {
   commercial
   land
   multi_family
+  house
+  construction
+  bare_land
 }
 
 enum OrderStatus {

@@ -171,15 +171,34 @@ export async function POST(request: NextRequest) {
     )
 
     // Get the post type
+    console.log('Looking up post type:', orderData.post_type)
     const postType = await prisma.postType.findFirst({
       where: { name: orderData.post_type },
     })
 
     if (!postType) {
-      return NextResponse.json({ error: 'Invalid post type' }, { status: 400 })
+      console.error('Post type not found:', orderData.post_type)
+      // List available post types for debugging
+      const availableTypes = await prisma.postType.findMany({ select: { name: true } })
+      console.error('Available post types:', availableTypes.map(t => t.name))
+      return NextResponse.json({ error: `Invalid post type: ${orderData.post_type}` }, { status: 400 })
     }
+    console.log('Found post type:', postType.name, postType.id)
+
+    // Validate property type before creating order
+    const validPropertyTypes = ['residential', 'commercial', 'land', 'multi_family', 'house', 'construction', 'bare_land']
+    if (!validPropertyTypes.includes(orderData.property_type)) {
+      console.error('Invalid property type:', orderData.property_type)
+      return NextResponse.json({ error: `Invalid property type: ${orderData.property_type}` }, { status: 400 })
+    }
+    console.log('Property type valid:', orderData.property_type)
 
     // Create order
+    console.log('Creating order with data:', {
+      postTypeId: postType.id,
+      propertyType: orderData.property_type,
+      propertyAddress: orderData.property_address,
+    })
     const order = await prisma.order.create({
       data: {
         orderNumber: generateOrderNumber(),
@@ -261,6 +280,9 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error creating order:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    // Return more details in development
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorDetails = process.env.NODE_ENV !== 'production' ? errorMessage : 'Internal server error'
+    return NextResponse.json({ error: errorDetails }, { status: 500 })
   }
 }

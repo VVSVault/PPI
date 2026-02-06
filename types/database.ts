@@ -10,7 +10,7 @@ export type OrderStatus = 'pending' | 'confirmed' | 'scheduled' | 'in_progress' 
 export type PaymentStatus = 'pending' | 'processing' | 'succeeded' | 'failed' | 'refunded'
 export type InstallationStatus = 'active' | 'removal_scheduled' | 'removed'
 export type UserRole = 'customer' | 'admin'
-export type PropertyType = 'commercial' | 'house' | 'construction' | 'multi_family' | 'bare_land'
+export type PropertyType = 'residential' | 'commercial' | 'land' | 'multi_family' | 'house' | 'construction' | 'bare_land'
 
 export interface Database {
   public: {
