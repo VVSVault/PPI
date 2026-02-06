@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
 
         if (order) {
           // Send confirmation emails
+          console.log(`Webhook: Sending emails for order ${order.orderNumber}`)
           try {
             await Promise.all([
               sendOrderConfirmationEmail({
@@ -88,8 +89,9 @@ export async function POST(request: NextRequest) {
                 isExpedited: order.isExpedited,
               }),
             ])
+            console.log(`Webhook: Emails sent successfully for order ${order.orderNumber}`)
           } catch (emailError) {
-            console.error('Error sending emails:', emailError)
+            console.error(`Webhook: Error sending emails for order ${order.orderNumber}:`, emailError)
           }
         }
         break

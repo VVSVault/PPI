@@ -126,6 +126,14 @@ export async function sendAdminOrderNotification({
   requestedDate,
   isExpedited,
 }: AdminNotificationEmailProps) {
+  const adminEmail = process.env.ADMIN_EMAIL
+  if (!adminEmail) {
+    console.error('ADMIN_EMAIL not configured - skipping admin notification')
+    return null
+  }
+
+  console.log(`Sending admin notification to ${adminEmail} for order ${orderNumber}`)
+
   const itemsList = items
     .map((item) => `• ${item.description} (x${item.quantity}) - $${item.total_price.toFixed(2)}`)
     .join('\n')
@@ -152,12 +160,19 @@ Total: $${total.toFixed(2)}
 View order details in the admin dashboard.
   `.trim()
 
-  return getResend().emails.send({
-    from: 'Pink Posts Installations <orders@pinkpostinstallations.com>',
-    to: process.env.ADMIN_EMAIL!,
-    subject: `${isExpedited ? '⚡ EXPEDITED ' : ''}New Order: ${orderNumber}`,
-    text,
-  })
+  try {
+    const result = await getResend().emails.send({
+      from: 'Pink Posts Installations <orders@pinkpostinstallations.com>',
+      to: adminEmail,
+      subject: `${isExpedited ? '⚡ EXPEDITED ' : ''}New Order: ${orderNumber}`,
+      text,
+    })
+    console.log(`Admin notification sent successfully for order ${orderNumber}:`, result)
+    return result
+  } catch (error) {
+    console.error(`Failed to send admin notification for order ${orderNumber}:`, error)
+    throw error
+  }
 }
 
 export async function sendPasswordResetEmail(

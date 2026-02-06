@@ -253,7 +253,9 @@ export async function POST(request: NextRequest) {
     })
 
     // Send emails if payment succeeded
+    console.log(`Order ${order.orderNumber} created, payment status: ${paymentIntent.status}`)
     if (paymentIntent.status === 'succeeded') {
+      console.log(`Payment succeeded immediately, sending emails for order ${order.orderNumber}`)
       try {
         await Promise.all([
           sendOrderConfirmationEmail({
@@ -277,9 +279,12 @@ export async function POST(request: NextRequest) {
             isExpedited: orderData.is_expedited,
           }),
         ])
+        console.log(`Emails sent successfully for order ${order.orderNumber}`)
       } catch (emailError) {
-        console.error('Error sending emails:', emailError)
+        console.error(`Error sending emails for order ${order.orderNumber}:`, emailError)
       }
+    } else {
+      console.log(`Payment not immediately succeeded (status: ${paymentIntent.status}), emails will be sent via webhook`)
     }
 
     return NextResponse.json({
