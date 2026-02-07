@@ -258,7 +258,7 @@ model Order {
   id                String        @id @default(cuid())
   orderNumber       String        @unique @map("order_number")
   userId            String        @map("user_id")
-  postTypeId        String        @map("post_type_id")
+  postTypeId        String?       @map("post_type_id") // Optional - orders can be for other services only
 
   // Property info
   propertyAddress   String        @map("property_address")
@@ -302,7 +302,7 @@ model Order {
   updatedAt         DateTime      @updatedAt @map("updated_at")
 
   user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postType          PostType      @relation(fields: [postTypeId], references: [id])
+  postType          PostType?     @relation(fields: [postTypeId], references: [id])
   promoCode         PromoCode?    @relation(fields: [promoCodeId], references: [id])
   orderItems        OrderItem[]
   installation      Installation?

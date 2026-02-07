@@ -35,7 +35,48 @@ export function PostStep({ formData, updateFormData }: StepProps) {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Select Your Post</h2>
-        <p className="text-gray-600">Choose the post color for your installation.</p>
+        <p className="text-gray-600">Choose the post color for your installation, or skip if you only need other services.</p>
+      </div>
+
+      {/* No Post Option */}
+      <button
+        type="button"
+        onClick={() => updateFormData({ post_type: undefined })}
+        className={cn(
+          'w-full p-4 rounded-xl border-2 transition-all text-left flex items-center gap-4',
+          formData.post_type === undefined
+            ? 'border-pink-500 ring-2 ring-pink-200 bg-pink-50'
+            : 'border-gray-200 hover:border-gray-300'
+        )}
+      >
+        <div className={cn(
+          'w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0',
+          formData.post_type === undefined ? 'bg-pink-500 text-white' : 'bg-gray-100 text-gray-400'
+        )}>
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </div>
+        <div>
+          <h3 className="font-semibold text-gray-900">No Post Needed</h3>
+          <p className="text-sm text-gray-600">I only need riders, lockbox, brochure box, or other services</p>
+        </div>
+        {formData.post_type === undefined && (
+          <div className="ml-auto w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        )}
+      </button>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-200" />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-4 bg-white text-gray-500">or select a post</span>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">

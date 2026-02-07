@@ -98,6 +98,13 @@ export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
     }
   }, [currentStep])
 
+  const goToStep = useCallback((stepIndex: number) => {
+    // Only allow going to completed steps or the current step
+    if (stepIndex <= currentStep) {
+      setCurrentStep(stepIndex)
+    }
+  }, [currentStep])
+
   const canProceed = useCallback(() => {
     const step = steps[currentStep]
     switch (step.id) {
@@ -114,7 +121,7 @@ export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
           orientationValid
         )
       case 'post':
-        return !!formData.post_type
+        return true // Post is now optional
       case 'sign':
       case 'rider':
       case 'lockbox':
@@ -161,13 +168,16 @@ export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
               className={`flex items-center ${index < steps.length - 1 ? 'flex-1' : ''}`}
             >
               <div className="relative flex items-center justify-center">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
+                <button
+                  type="button"
+                  onClick={() => goToStep(index)}
+                  disabled={index > currentStep}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
                     index < currentStep
-                      ? 'bg-pink-500 text-white'
+                      ? 'bg-pink-500 text-white hover:bg-pink-600 cursor-pointer'
                       : index === currentStep
                       ? 'bg-pink-500 text-white ring-4 ring-pink-200'
-                      : 'bg-gray-100 text-gray-400'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   }`}
                 >
                   {index < currentStep ? (
@@ -175,14 +185,21 @@ export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
                   ) : (
                     index + 1
                   )}
-                </div>
-                <span
-                  className={`absolute -bottom-6 whitespace-nowrap text-xs ${
-                    index <= currentStep ? 'text-gray-900' : 'text-gray-400'
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goToStep(index)}
+                  disabled={index > currentStep}
+                  className={`absolute -bottom-6 whitespace-nowrap text-xs transition-colors ${
+                    index < currentStep
+                      ? 'text-gray-900 hover:text-pink-600 cursor-pointer'
+                      : index === currentStep
+                      ? 'text-gray-900'
+                      : 'text-gray-400 cursor-not-allowed'
                   }`}
                 >
                   {step.title}
-                </span>
+                </button>
               </div>
               {index < steps.length - 1 && (
                 <div

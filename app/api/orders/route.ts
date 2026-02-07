@@ -172,20 +172,26 @@ export async function POST(request: NextRequest) {
       orderData.payment_method_id
     )
 
-    // Get the post type
-    console.log('Looking up post type:', orderData.post_type)
-    const postType = await prisma.postType.findFirst({
-      where: { name: orderData.post_type },
-    })
+    // Get the post type (optional - orders can be for other services only)
+    let postTypeId: string | null = null
+    if (orderData.post_type) {
+      console.log('Looking up post type:', orderData.post_type)
+      const postType = await prisma.postType.findFirst({
+        where: { name: orderData.post_type },
+      })
 
-    if (!postType) {
-      console.error('Post type not found:', orderData.post_type)
-      // List available post types for debugging
-      const availableTypes = await prisma.postType.findMany({ select: { name: true } })
-      console.error('Available post types:', availableTypes.map(t => t.name))
-      return NextResponse.json({ error: `Invalid post type: ${orderData.post_type}` }, { status: 400 })
+      if (!postType) {
+        console.error('Post type not found:', orderData.post_type)
+        // List available post types for debugging
+        const availableTypes = await prisma.postType.findMany({ select: { name: true } })
+        console.error('Available post types:', availableTypes.map(t => t.name))
+        return NextResponse.json({ error: `Invalid post type: ${orderData.post_type}` }, { status: 400 })
+      }
+      console.log('Found post type:', postType.name, postType.id)
+      postTypeId = postType.id
+    } else {
+      console.log('No post type selected - order is for other services only')
     }
-    console.log('Found post type:', postType.name, postType.id)
 
     // Validate property type before creating order
     const validPropertyTypes = ['residential', 'commercial', 'land', 'multi_family', 'house', 'construction', 'bare_land']
@@ -197,7 +203,7 @@ export async function POST(request: NextRequest) {
 
     // Create order
     console.log('Creating order with data:', {
-      postTypeId: postType.id,
+      postTypeId,
       propertyType: orderData.property_type,
       propertyAddress: orderData.property_address,
     })
@@ -205,7 +211,7 @@ export async function POST(request: NextRequest) {
       data: {
         orderNumber: generateOrderNumber(),
         userId: user.id,
-        postTypeId: postType.id,
+        postTypeId,
         propertyType: orderData.property_type as any,
         propertyAddress: orderData.property_address,
         propertyCity: orderData.property_city,

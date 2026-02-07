@@ -293,16 +293,18 @@ export default function OrderDetailsPage() {
               </div>
 
               {/* Post Type */}
-              <div className="flex items-start gap-3 mb-4 pb-4 border-b border-gray-100">
-                <Package className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <p className="text-sm text-gray-500">Sign Post Type</p>
-                  <p className="font-medium text-gray-900">{order.postType.name}</p>
-                  {order.postType.description && (
-                    <p className="text-sm text-gray-500">{order.postType.description}</p>
-                  )}
+              {order.postType && (
+                <div className="flex items-start gap-3 mb-4 pb-4 border-b border-gray-100">
+                  <Package className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-gray-500">Sign Post Type</p>
+                    <p className="font-medium text-gray-900">{order.postType.name}</p>
+                    {order.postType.description && (
+                      <p className="text-sm text-gray-500">{order.postType.description}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Schedule */}
               <div className="flex items-start gap-3 mb-4 pb-4 border-b border-gray-100">

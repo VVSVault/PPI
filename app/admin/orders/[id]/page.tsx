@@ -343,13 +343,15 @@ export default function AdminOrderDetailPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <Package className="w-5 h-5 text-gray-400 mt-0.5" />
-                  <div>
-                    <p className="text-sm text-gray-500">Post Type</p>
-                    <p className="font-medium text-gray-900">{order.postType.name}</p>
+                {order.postType && (
+                  <div className="flex items-start gap-3">
+                    <Package className="w-5 h-5 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-gray-500">Post Type</p>
+                      <p className="font-medium text-gray-900">{order.postType.name}</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
               {order.propertyNotes && (
                 <div className="mt-4 pt-4 border-t border-gray-100">

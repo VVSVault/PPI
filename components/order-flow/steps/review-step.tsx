@@ -269,8 +269,9 @@ export function ReviewStep({
   }
 
   const handleSubmit = async () => {
-    if (!formData.post_type) {
-      setError('Please select a post type')
+    // Ensure at least one item is in the order
+    if (orderItems.length === 0) {
+      setError('Please select at least one item for your order')
       return
     }
 
