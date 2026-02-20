@@ -76,6 +76,18 @@ export async function POST(request: NextRequest) {
         where: { id: orderData.promo_code_id },
       })
       if (promoCode && promoCode.isActive) {
+        // Check per-customer usage before applying
+        const maxUsesPerCustomer = promoCode.maxUses ?? 1
+        const userUsageCount = await prisma.promoCodeUsage.count({
+          where: {
+            userId: user.id,
+            promoCodeId: promoCode.id,
+          },
+        })
+        if (userUsageCount >= maxUsesPerCustomer) {
+          return NextResponse.json({ error: 'You have already used this promo code' }, { status: 400 })
+        }
+
         // Validate and calculate discount
         if (promoCode.discountType === 'percentage') {
           discount = subtotal * (Number(promoCode.discountValue) / 100)

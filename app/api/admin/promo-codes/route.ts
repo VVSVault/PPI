@@ -5,7 +5,7 @@ import { z } from 'zod'
 
 const createPromoCodeSchema = z.object({
   code: z.string().min(1).max(50).transform((v) => v.toUpperCase()),
-  description: z.string().optional(),
+  description: z.string().optional().nullable(),
   discountType: z.enum(['percentage', 'fixed']),
   discountValue: z.number().positive(),
   minOrderAmount: z.number().positive().optional().nullable(),
