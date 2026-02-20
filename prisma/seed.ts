@@ -61,6 +61,17 @@ async function main() {
         isActive: true,
       },
     }),
+    prisma.postType.upsert({
+      where: { name: 'Metal Frame Sign' },
+      update: {},
+      create: {
+        name: 'Metal Frame Sign',
+        description: 'Standard angle iron frame, powder coated finish, fits 18"h x 24"w signs',
+        price: 40.00,
+        imageUrl: '/images/posts/metal-frame.jpg',
+        isActive: true,
+      },
+    }),
   ])
   console.log(`Created ${postTypes.length} post types`)
 

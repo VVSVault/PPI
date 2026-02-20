@@ -42,6 +42,7 @@ export const createOrderSchema = z.object({
   save_payment_method: z.boolean().default(false),
   promo_code: z.string().optional(),
   promo_code_id: z.string().optional(),
+  fuel_surcharge_waived: z.boolean().default(false),
   // Installation details
   is_gated_community: z.boolean().default(false),
   gate_code: z.string().optional(),

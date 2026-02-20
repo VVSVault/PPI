@@ -186,8 +186,8 @@ export function AddCardModal({ isOpen, onClose, onSuccess }: AddCardModalProps) 
       />
 
       {/* Modal */}
-      <Card className="relative z-10 w-full max-w-md">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <Card className="relative z-10 w-full max-w-md max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
           <h2 className="text-lg font-semibold text-gray-900">Add Payment Method</h2>
           <button
             onClick={handleClose}
@@ -197,7 +197,7 @@ export function AddCardModal({ isOpen, onClose, onSuccess }: AddCardModalProps) 
           </button>
         </div>
 
-        <CardContent className="p-4">
+        <CardContent className="p-4 overflow-y-auto flex-1">
           {loading && (
             <div className="py-8 flex flex-col items-center justify-center">
               <Loader2 className="w-8 h-8 text-pink-500 animate-spin mb-3" />

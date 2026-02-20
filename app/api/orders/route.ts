@@ -6,6 +6,7 @@ import { createPaymentIntent, createCustomer, calculateTax } from '@/lib/stripe/
 import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/lib/email'
 
 const FUEL_SURCHARGE = 2.47
+const NO_POST_SURCHARGE = 40
 const FALLBACK_TAX_RATE = 0.06 // Fallback Kentucky 6% sales tax if Stripe Tax unavailable
 
 export async function GET(request: NextRequest) {
@@ -28,6 +29,7 @@ export async function GET(request: NextRequest) {
       },
       include: {
         orderItems: true,
+        postType: { select: { name: true } },
       },
       orderBy: { createdAt: 'desc' },
       take: limit,
@@ -68,6 +70,7 @@ export async function POST(request: NextRequest) {
     // Handle promo code discount
     let discount = 0
     let promoCodeId: string | undefined = undefined
+    let fuelSurchargeWaived = false
     if (orderData.promo_code_id) {
       const promoCode = await prisma.promoCode.findUnique({
         where: { id: orderData.promo_code_id },
@@ -81,6 +84,7 @@ export async function POST(request: NextRequest) {
         }
         discount = Math.round(discount * 100) / 100
         promoCodeId = promoCode.id
+        fuelSurchargeWaived = promoCode.waiveFuelSurcharge
 
         // Record per-customer promo code usage
         await prisma.promoCodeUsage.create({
@@ -92,8 +96,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const noPostSurcharge = !orderData.post_type ? NO_POST_SURCHARGE : 0
+    const actualFuelSurcharge = fuelSurchargeWaived ? 0 : FUEL_SURCHARGE
     const discountedSubtotal = Math.max(0, subtotal - discount)
-    const taxableAmount = discountedSubtotal + expediteFee // Fuel surcharge typically not taxed
+    const taxableAmount = discountedSubtotal + expediteFee + noPostSurcharge // Fuel surcharge typically not taxed
 
     // Calculate tax using Stripe Tax (with fallback to hardcoded rate)
     let tax = 0
@@ -151,7 +157,7 @@ export async function POST(request: NextRequest) {
       taxCalculationMethod = 'fallback'
     }
 
-    const total = discountedSubtotal + FUEL_SURCHARGE + expediteFee + tax
+    const total = discountedSubtotal + actualFuelSurcharge + expediteFee + noPostSurcharge + tax
 
     // Create or get Stripe customer
     let stripeCustomerId = user.stripeCustomerId
@@ -229,7 +235,8 @@ export async function POST(request: NextRequest) {
         scheduledDate: orderData.requested_date ? new Date(orderData.requested_date) : null,
         isExpedited: orderData.is_expedited,
         subtotal,
-        fuelSurcharge: FUEL_SURCHARGE,
+        fuelSurcharge: actualFuelSurcharge,
+        noPostSurcharge,
         expediteFee,
         discount,
         tax,
@@ -283,6 +290,22 @@ export async function POST(request: NextRequest) {
             items: orderData.items,
             requestedDate: orderData.requested_date,
             isExpedited: orderData.is_expedited,
+            propertyType: orderData.property_type,
+            postType: orderData.post_type || undefined,
+            installationNotes: orderData.installation_notes || undefined,
+            installationLocation: orderData.installation_location || undefined,
+            isGatedCommunity: orderData.is_gated_community,
+            gateCode: orderData.gate_code || undefined,
+            hasMarkerPlaced: orderData.has_marker_placed,
+            signOrientation: orderData.sign_orientation || undefined,
+            signOrientationOther: orderData.sign_orientation_other || undefined,
+            subtotal,
+            discount,
+            promoCode: orderData.promo_code || undefined,
+            fuelSurcharge: actualFuelSurcharge,
+            noPostSurcharge,
+            expediteFee,
+            tax,
           }),
         ])
         console.log(`Emails sent successfully for order ${order.orderNumber}`)

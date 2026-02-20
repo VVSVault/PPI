@@ -66,17 +66,14 @@ export const PRICING = {
   posts: {
     white: {
       installation: 55,
-      reinstall: 35,
       replacement: 75,
     },
     black: {
       installation: 55,
-      reinstall: 35,
       replacement: 75,
     },
     pink: {
       installation: 65,
-      reinstall: 40,
       replacement: 85,
     },
   },

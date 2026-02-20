@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
         description: promoCode.description,
         discountType: promoCode.discountType,
         discountValue: Number(promoCode.discountValue),
+        waiveFuelSurcharge: promoCode.waiveFuelSurcharge,
       },
       discount,
     })

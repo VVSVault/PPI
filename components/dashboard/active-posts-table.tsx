@@ -11,7 +11,7 @@ import {
   Badge,
   Button,
 } from '@/components/ui'
-import { MoreVertical, Calendar, Wrench, Eye, MapPin } from 'lucide-react'
+import { MoreVertical, Calendar, Wrench, Eye, MapPin, X } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import {
   InstallationDetailsModal,
@@ -45,7 +45,7 @@ const statusConfig = {
 }
 
 const ActivePostsTable = ({ installations, onRefresh }: ActivePostsTableProps) => {
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  const [actionInstallation, setActionInstallation] = useState<Installation | null>(null)
   const [selectedInstallation, setSelectedInstallation] = useState<Installation | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [showRemovalModal, setShowRemovalModal] = useState(false)
@@ -54,19 +54,19 @@ const ActivePostsTable = ({ installations, onRefresh }: ActivePostsTableProps) =
   const handleViewDetails = (installation: Installation) => {
     setSelectedInstallation(installation)
     setShowDetailsModal(true)
-    setOpenMenuId(null)
+    setActionInstallation(null)
   }
 
   const handleScheduleRemoval = (installation: Installation) => {
     setSelectedInstallation(installation)
     setShowRemovalModal(true)
-    setOpenMenuId(null)
+    setActionInstallation(null)
   }
 
   const handleRequestService = (installation: Installation) => {
     setSelectedInstallation(installation)
     setShowServiceModal(true)
-    setOpenMenuId(null)
+    setActionInstallation(null)
   }
 
   const handleModalSuccess = () => {
@@ -79,6 +79,59 @@ const ActivePostsTable = ({ installations, onRefresh }: ActivePostsTableProps) =
 
   return (
     <>
+      {/* Action Popup - Fixed center overlay */}
+      {actionInstallation && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/30 z-40"
+            onClick={() => setActionInstallation(null)}
+          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-xl border border-gray-200 w-full max-w-xs">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">{actionInstallation.address}</p>
+                  <p className="text-xs text-gray-500">{actionInstallation.city}, {actionInstallation.state}</p>
+                </div>
+                <button
+                  onClick={() => setActionInstallation(null)}
+                  className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="py-1">
+                <button
+                  onClick={() => handleViewDetails(actionInstallation)}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <Eye className="w-4 h-4 text-gray-400" />
+                  View Details
+                </button>
+                {actionInstallation.status === 'active' && (
+                  <button
+                    onClick={() => handleScheduleRemoval(actionInstallation)}
+                    className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    Schedule Removal
+                  </button>
+                )}
+                {actionInstallation.status !== 'removed' && (
+                  <button
+                    onClick={() => handleRequestService(actionInstallation)}
+                    className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Wrench className="w-4 h-4 text-gray-400" />
+                    Request Service
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Mobile Card View */}
       <div className="md:hidden space-y-3">
         {installations.map((installation) => (
@@ -111,53 +164,12 @@ const ActivePostsTable = ({ installations, onRefresh }: ActivePostsTableProps) =
                 <Badge variant={statusConfig[installation.status].variant}>
                   {statusConfig[installation.status].label}
                 </Badge>
-                <div className="relative">
-                  <button
-                    onClick={() =>
-                      setOpenMenuId(
-                        openMenuId === installation.id ? null : installation.id
-                      )
-                    }
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <MoreVertical className="w-4 h-4 text-gray-500" />
-                  </button>
-                  {openMenuId === installation.id && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setOpenMenuId(null)}
-                      />
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20 py-1">
-                        <button
-                          onClick={() => handleViewDetails(installation)}
-                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          <Eye className="w-4 h-4" />
-                          View Details
-                        </button>
-                        {installation.status === 'active' && (
-                          <button
-                            onClick={() => handleScheduleRemoval(installation)}
-                            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          >
-                            <Calendar className="w-4 h-4" />
-                            Schedule Removal
-                          </button>
-                        )}
-                        {installation.status !== 'removed' && (
-                          <button
-                            onClick={() => handleRequestService(installation)}
-                            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          >
-                            <Wrench className="w-4 h-4" />
-                            Request Service
-                          </button>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
+                <button
+                  onClick={() => setActionInstallation(installation)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <MoreVertical className="w-4 h-4 text-gray-500" />
+                </button>
               </div>
             </div>
           </div>
@@ -210,55 +222,12 @@ const ActivePostsTable = ({ installations, onRefresh }: ActivePostsTableProps) =
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="relative">
-                      <button
-                        onClick={() =>
-                          setOpenMenuId(
-                            openMenuId === installation.id ? null : installation.id
-                          )
-                        }
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                      >
-                        <MoreVertical className="w-4 h-4 text-gray-500" />
-                      </button>
-
-                      {/* Dropdown Menu */}
-                      {openMenuId === installation.id && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-10"
-                            onClick={() => setOpenMenuId(null)}
-                          />
-                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20 py-1">
-                            <button
-                              onClick={() => handleViewDetails(installation)}
-                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                            >
-                              <Eye className="w-4 h-4" />
-                              View Details
-                            </button>
-                            {installation.status === 'active' && (
-                              <button
-                                onClick={() => handleScheduleRemoval(installation)}
-                                className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                              >
-                                <Calendar className="w-4 h-4" />
-                                Schedule Removal
-                              </button>
-                            )}
-                            {installation.status !== 'removed' && (
-                              <button
-                                onClick={() => handleRequestService(installation)}
-                                className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                              >
-                                <Wrench className="w-4 h-4" />
-                                Request Service
-                              </button>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
+                    <button
+                      onClick={() => setActionInstallation(installation)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <MoreVertical className="w-4 h-4 text-gray-500" />
+                    </button>
                   </TableCell>
                 </TableRow>
               ))}

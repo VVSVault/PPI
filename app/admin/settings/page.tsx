@@ -57,6 +57,7 @@ export default function AdminSettingsPage() {
     discountValue: '',
     maxUses: '',
     expiresAt: '',
+    waiveFuelSurcharge: false,
   })
 
   useEffect(() => {
@@ -113,6 +114,7 @@ export default function AdminSettingsPage() {
           discountValue: parseFloat(newPromo.discountValue),
           maxUses: newPromo.maxUses ? parseInt(newPromo.maxUses) : null,
           expiresAt: newPromo.expiresAt ? new Date(newPromo.expiresAt).toISOString() : null,
+          waiveFuelSurcharge: newPromo.waiveFuelSurcharge,
           isActive: true,
         }),
       })
@@ -128,6 +130,7 @@ export default function AdminSettingsPage() {
           discountValue: '',
           maxUses: '',
           expiresAt: '',
+          waiveFuelSurcharge: false,
         })
       } else {
         const data = await res.json()
@@ -497,6 +500,17 @@ export default function AdminSettingsPage() {
                     />
                   </div>
                 </div>
+                <label className="flex items-center gap-2 mt-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newPromo.waiveFuelSurcharge}
+                    onChange={(e) =>
+                      setNewPromo({ ...newPromo, waiveFuelSurcharge: e.target.checked })
+                    }
+                    className="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+                  />
+                  <span className="text-sm text-gray-700">Waive fuel surcharge ($2.47)</span>
+                </label>
                 {promoError && (
                   <p className="text-red-600 text-sm mt-2">{promoError}</p>
                 )}

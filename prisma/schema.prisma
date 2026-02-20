@@ -284,6 +284,7 @@ model Order {
   // Pricing
   subtotal          Decimal       @db.Decimal(10, 2)
   fuelSurcharge     Decimal       @default(2.47) @db.Decimal(10, 2) @map("fuel_surcharge")
+  noPostSurcharge   Decimal       @default(0) @db.Decimal(10, 2) @map("no_post_surcharge")
   expediteFee       Decimal       @default(0) @db.Decimal(10, 2) @map("expedite_fee")
   discount          Decimal       @default(0) @db.Decimal(10, 2)
   tax               Decimal       @default(0) @db.Decimal(10, 2)
@@ -503,6 +504,7 @@ model PromoCode {
   maxUses         Int?      @map("max_uses") // Max uses per customer (null = unlimited)
   startsAt        DateTime? @map("starts_at")
   expiresAt       DateTime? @map("expires_at")
+  waiveFuelSurcharge Boolean @default(false) @map("waive_fuel_surcharge")
   isActive        Boolean   @default(true) @map("is_active")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")

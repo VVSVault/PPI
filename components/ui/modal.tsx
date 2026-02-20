@@ -53,7 +53,7 @@ const Modal = ({
         {/* Modal Content */}
         <div
           className={cn(
-            'bg-white rounded-lg shadow-xl overflow-hidden animate-scale-in',
+            'bg-white rounded-lg shadow-xl overflow-hidden animate-scale-in max-h-[90vh] flex flex-col',
             variants[variant],
             variant === 'side-panel' && 'rounded-l-lg rounded-r-none animate-slide-up',
             className
@@ -61,7 +61,7 @@ const Modal = ({
         >
           {/* Header */}
           {title && (
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
               <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
               <button
                 onClick={onClose}
@@ -73,7 +73,7 @@ const Modal = ({
           )}
 
           {/* Body */}
-          <div className={cn('px-6 py-4', !title && 'pt-6')}>
+          <div className={cn('px-6 py-4 overflow-y-auto flex-1', !title && 'pt-6')}>
             {!title && (
               <button
                 onClick={onClose}

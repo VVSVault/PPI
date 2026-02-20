@@ -18,7 +18,7 @@ const CTABanner = () => {
             Ready to Simplify Your Sign Installations?
           </h2>
           <p className="mt-4 text-lg text-pink-100 max-w-2xl mx-auto">
-            Join 500+ Kentucky realtors who trust Pink Posts for their yard sign needs.
+            Next-day sign installation so you can focus on closing deals
           </p>
           <div className="mt-8">
             <Link href="/sign-up">

@@ -27,7 +27,7 @@ export interface OrderFormData {
   sign_orientation_other?: string
 
   // Post Selection
-  post_type: 'White Vinyl Post' | 'Black Vinyl Post' | 'Signature Pink Post' | undefined
+  post_type: 'White Vinyl Post' | 'Black Vinyl Post' | 'Signature Pink Post' | 'Metal Frame Sign' | undefined
 
   // Sign Selection
   sign_option: 'stored' | 'at_property' | 'none'
@@ -59,6 +59,7 @@ export interface OrderFormData {
   promo_code?: string
   promo_code_id?: string
   discount?: number
+  fuel_surcharge_waived?: boolean
 }
 
 export interface StepProps {
@@ -85,7 +86,9 @@ export const PRICING = {
     'White Vinyl Post': 55,
     'Black Vinyl Post': 55,
     'Signature Pink Post': 65,
+    'Metal Frame Sign': 40,
   },
+  no_post_surcharge: 40,
   sign_install: 3,
   rider_rental: 5,
   rider_install: 2,

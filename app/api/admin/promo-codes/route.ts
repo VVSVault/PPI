@@ -12,6 +12,7 @@ const createPromoCodeSchema = z.object({
   maxUses: z.number().int().positive().optional().nullable(),
   startsAt: z.string().datetime().optional().nullable(),
   expiresAt: z.string().datetime().optional().nullable(),
+  waiveFuelSurcharge: z.boolean().default(false),
   isActive: z.boolean().default(true),
 })
 
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest) {
         maxUses: data.maxUses,
         startsAt: data.startsAt ? new Date(data.startsAt) : null,
         expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+        waiveFuelSurcharge: data.waiveFuelSurcharge,
         isActive: data.isActive,
       },
     })

@@ -2,40 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import { Header, OrderHistoryTable } from '@/components/dashboard'
-import type { OrderItem } from '@/components/dashboard/order-history-table'
+import type { OrderData } from '@/components/dashboard/order-history-table'
 import { Loader2 } from 'lucide-react'
-
-interface OrderItemFromAPI {
-  id: string
-  itemType: string
-  itemCategory: string
-  description: string
-  quantity: number
-  unitPrice: number | string
-  totalPrice: number | string
-}
-
-interface OrderFromAPI {
-  id: string
-  orderNumber: string
-  createdAt: string
-  propertyAddress: string
-  propertyCity: string
-  propertyState: string
-  propertyZip: string
-  status: string
-  orderItems: OrderItemFromAPI[]
-}
 
 const ITEMS_PER_PAGE = 20
 
 export default function OrderHistoryPage() {
-  const [items, setItems] = useState<OrderItem[]>([])
+  const [orders, setOrders] = useState<OrderData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(false)
-  const [totalCount, setTotalCount] = useState(0)
 
   useEffect(() => {
     async function fetchOrders() {
@@ -49,43 +26,9 @@ export default function OrderHistoryPage() {
         }
 
         const data = await res.json()
-        const orders: OrderFromAPI[] = data.orders || []
-
-        // Transform orders into flat OrderItem array for the table
-        const transformedItems: OrderItem[] = []
-
-        for (const order of orders) {
-          const address = `${order.propertyAddress}, ${order.propertyCity}, ${order.propertyState} ${order.propertyZip}`
-          const date = new Date(order.createdAt).toISOString().split('T')[0]
-
-          for (const item of order.orderItems) {
-            // Map itemType to the expected types
-            let itemType: 'post' | 'rider' | 'lockbox' | 'service' = 'service'
-            if (item.itemType === 'sign' || item.itemType === 'post') {
-              itemType = 'post'
-            } else if (item.itemType === 'rider') {
-              itemType = 'rider'
-            } else if (item.itemType === 'lockbox') {
-              itemType = 'lockbox'
-            } else if (item.itemType === 'service' || item.itemType === 'brochure_box') {
-              itemType = 'service'
-            }
-
-            transformedItems.push({
-              id: item.id,
-              date,
-              itemType,
-              description: item.description || `${item.itemType.toUpperCase()}: ${item.itemCategory || 'Standard'}`,
-              address,
-              amount: typeof item.totalPrice === 'string' ? parseFloat(item.totalPrice) : item.totalPrice,
-              belongsTo: 'You',
-            })
-          }
-        }
-
-        setItems(transformedItems)
-        setTotalCount(transformedItems.length)
-        setHasMore(orders.length === ITEMS_PER_PAGE)
+        const fetchedOrders: OrderData[] = data.orders || []
+        setOrders(fetchedOrders)
+        setHasMore(fetchedOrders.length === ITEMS_PER_PAGE)
       } catch (err) {
         console.error('Error fetching orders:', err)
         setError(err instanceof Error ? err.message : 'Failed to load order history')
@@ -98,15 +41,11 @@ export default function OrderHistoryPage() {
   }, [page])
 
   const handlePrevious = () => {
-    if (page > 0) {
-      setPage(page - 1)
-    }
+    if (page > 0) setPage(page - 1)
   }
 
   const handleNext = () => {
-    if (hasMore) {
-      setPage(page + 1)
-    }
+    if (hasMore) setPage(page + 1)
   }
 
   if (loading) {
@@ -147,18 +86,18 @@ export default function OrderHistoryPage() {
       <Header title="Order History" />
 
       <div className="p-6">
-        {items.length === 0 ? (
+        {orders.length === 0 ? (
           <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
             <p className="text-gray-500">No orders found. Place your first order to see it here!</p>
           </div>
         ) : (
           <>
-            <OrderHistoryTable items={items} />
+            <OrderHistoryTable orders={orders} />
 
             {/* Pagination */}
             <div className="mt-6 flex items-center justify-between">
               <p className="text-sm text-gray-500">
-                Showing {page * ITEMS_PER_PAGE + 1}-{Math.min((page + 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE + items.length)} items
+                Page {page + 1}
               </p>
               <div className="flex gap-2">
                 <button

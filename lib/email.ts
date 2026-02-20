@@ -113,6 +113,23 @@ interface AdminNotificationEmailProps {
   items: Array<{ description: string; quantity: number; total_price: number }>
   requestedDate?: string
   isExpedited: boolean
+  // Additional details
+  propertyType?: string
+  postType?: string
+  installationNotes?: string
+  installationLocation?: string
+  isGatedCommunity?: boolean
+  gateCode?: string
+  hasMarkerPlaced?: boolean
+  signOrientation?: string
+  signOrientationOther?: string
+  subtotal?: number
+  discount?: number
+  promoCode?: string
+  fuelSurcharge?: number
+  noPostSurcharge?: number
+  expediteFee?: number
+  tax?: number
 }
 
 export async function sendAdminOrderNotification({
@@ -125,6 +142,22 @@ export async function sendAdminOrderNotification({
   items,
   requestedDate,
   isExpedited,
+  propertyType,
+  postType,
+  installationNotes,
+  installationLocation,
+  isGatedCommunity,
+  gateCode,
+  hasMarkerPlaced,
+  signOrientation,
+  signOrientationOther,
+  subtotal,
+  discount,
+  promoCode,
+  fuelSurcharge,
+  noPostSurcharge,
+  expediteFee,
+  tax,
 }: AdminNotificationEmailProps) {
   const adminEmail = process.env.ADMIN_EMAIL
   if (!adminEmail) {
@@ -137,6 +170,53 @@ export async function sendAdminOrderNotification({
   const itemsList = items
     .map((item) => `• ${item.description} (x${item.quantity}) - $${item.total_price.toFixed(2)}`)
     .join('\n')
+
+  // Build pricing breakdown
+  let pricingBreakdown = ''
+  if (subtotal !== undefined) {
+    pricingBreakdown += `\nSubtotal: $${subtotal.toFixed(2)}`
+  }
+  if (discount && discount > 0) {
+    pricingBreakdown += `\nDiscount${promoCode ? ` (${promoCode})` : ''}: -$${discount.toFixed(2)}`
+  }
+  if (fuelSurcharge !== undefined) {
+    pricingBreakdown += `\nFuel Surcharge: $${fuelSurcharge.toFixed(2)}${fuelSurcharge === 0 ? ' (waived)' : ''}`
+  }
+  if (noPostSurcharge && noPostSurcharge > 0) {
+    pricingBreakdown += `\nService Trip Fee (no post): $${noPostSurcharge.toFixed(2)}`
+  }
+  if (expediteFee && expediteFee > 0) {
+    pricingBreakdown += `\nExpedite Fee: $${expediteFee.toFixed(2)}`
+  }
+  if (tax !== undefined) {
+    pricingBreakdown += `\nTax: $${tax.toFixed(2)}`
+  }
+
+  // Build installation details section
+  let installationDetails = ''
+  if (propertyType) {
+    installationDetails += `\nProperty Type: ${propertyType.replace('_', ' ')}`
+  }
+  if (postType) {
+    installationDetails += `\nPost Type: ${postType}`
+  } else {
+    installationDetails += `\nPost Type: None (service trip only)`
+  }
+  if (installationLocation) {
+    installationDetails += `\nInstallation Location: ${installationLocation}`
+  }
+  if (signOrientation) {
+    installationDetails += `\nSign Orientation: ${signOrientation}${signOrientationOther ? ` - ${signOrientationOther}` : ''}`
+  }
+  if (isGatedCommunity) {
+    installationDetails += `\nGated Community: Yes${gateCode ? ` (Code: ${gateCode})` : ''}`
+  }
+  if (hasMarkerPlaced) {
+    installationDetails += `\nMarker Placed: Yes`
+  }
+  if (installationNotes) {
+    installationDetails += `\n\nSpecial Requests / Notes:\n${installationNotes}`
+  }
 
   const text = `
 New Order Received!
@@ -152,9 +232,12 @@ Customer Information:
 Property: ${propertyAddress}
 ${requestedDate ? `Requested Date: ${requestedDate}` : 'Requested Date: Next Available'}
 
+Installation Details:${installationDetails}
+
 Order Items:
 ${itemsList}
 
+Pricing Breakdown:${pricingBreakdown}
 Total: $${total.toFixed(2)}
 
 View order details in the admin dashboard.

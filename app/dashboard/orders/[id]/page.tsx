@@ -17,6 +17,7 @@ import {
   XCircle,
   Truck,
   FileText,
+  Pencil,
 } from 'lucide-react'
 
 interface OrderItem {
@@ -42,6 +43,7 @@ interface Order {
   isExpedited: boolean
   subtotal: number | string
   fuelSurcharge: number | string
+  noPostSurcharge: number | string
   expediteFee: number | string
   discount: number | string
   tax: number | string
@@ -379,10 +381,18 @@ export default function OrderDetailsPage() {
                     <span>-${Number(order.discount).toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Fuel Surcharge</span>
-                  <span className="text-gray-900">${Number(order.fuelSurcharge).toFixed(2)}</span>
-                </div>
+                {Number(order.fuelSurcharge) > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Fuel Surcharge</span>
+                    <span className="text-gray-900">${Number(order.fuelSurcharge).toFixed(2)}</span>
+                  </div>
+                )}
+                {Number(order.noPostSurcharge) > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Service Trip Fee (no post)</span>
+                    <span className="text-gray-900">${Number(order.noPostSurcharge).toFixed(2)}</span>
+                  </div>
+                )}
                 {Number(order.expediteFee) > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Expedite Fee</span>
@@ -412,6 +422,14 @@ export default function OrderDetailsPage() {
               Back to Orders
             </Button>
           </Link>
+          {order.status !== 'completed' && order.status !== 'cancelled' && (
+            <Link href={`/dashboard/orders/${order.id}/edit`} className="flex-1">
+              <Button variant="outline" className="w-full">
+                <Pencil className="w-4 h-4 mr-2" />
+                Edit Order
+              </Button>
+            </Link>
+          )}
           {order.status === 'completed' && (
             <Link href="/dashboard" className="flex-1">
               <Button className="w-full">View Installation</Button>

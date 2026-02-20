@@ -44,6 +44,9 @@ export function ReviewStep({
     })
   }
 
+  // No-post surcharge (service trip fee when no post is selected)
+  const noPostSurcharge = !formData.post_type ? PRICING.no_post_surcharge : 0
+
   // Sign
   if (formData.sign_option === 'stored') {
     orderItems.push({
@@ -99,13 +102,15 @@ export function ReviewStep({
   const subtotal = orderItems.reduce((sum, item) => sum + item.price, 0)
   const expediteFee = formData.schedule_type === 'expedited' ? PRICING.expedite_fee : 0
   const discount = formData.discount || 0
+  const fuelSurchargeWaived = formData.fuel_surcharge_waived || false
+  const fuelSurcharge = fuelSurchargeWaived ? 0 : PRICING.fuel_surcharge
   const discountedSubtotal = Math.max(0, subtotal - discount)
-  const taxableAmount = discountedSubtotal + expediteFee // Fuel surcharge typically not taxed
+  const taxableAmount = discountedSubtotal + expediteFee + noPostSurcharge // Fuel surcharge typically not taxed
 
   // Use calculated tax from Stripe Tax API, or fallback to default rate
   const fallbackTax = Math.round(taxableAmount * PRICING.tax_rate * 100) / 100
   const tax = calculatedTax !== null ? calculatedTax : fallbackTax
-  const total = discountedSubtotal + PRICING.fuel_surcharge + expediteFee + tax
+  const total = discountedSubtotal + fuelSurcharge + expediteFee + noPostSurcharge + tax
 
   // Build items for tax calculation (same structure used in submit)
   const buildTaxItems = useCallback(() => {
@@ -223,8 +228,10 @@ export function ReviewStep({
         promo_code: data.promoCode.code,
         promo_code_id: data.promoCode.id,
         discount: data.discount,
+        fuel_surcharge_waived: data.promoCode.waiveFuelSurcharge || false,
       })
-      setPromoCodeSuccess(`Promo code "${data.promoCode.code}" applied! You save $${data.discount.toFixed(2)}`)
+      const savings = data.discount + (data.promoCode.waiveFuelSurcharge ? PRICING.fuel_surcharge : 0)
+      setPromoCodeSuccess(`Promo code "${data.promoCode.code}" applied! You save $${savings.toFixed(2)}${data.promoCode.waiveFuelSurcharge ? ' (includes fuel surcharge waiver)' : ''}`)
     } catch (err) {
       setPromoCodeError(err instanceof Error ? err.message : 'Failed to apply promo code')
     } finally {
@@ -237,6 +244,7 @@ export function ReviewStep({
       promo_code: undefined,
       promo_code_id: undefined,
       discount: undefined,
+      fuel_surcharge_waived: false,
     })
     setPromoCodeInput('')
     setPromoCodeSuccess(null)
@@ -436,6 +444,7 @@ export function ReviewStep({
           save_payment_method: formData.save_payment_method,
           promo_code: formData.promo_code,
           promo_code_id: formData.promo_code_id,
+          fuel_surcharge_waived: fuelSurchargeWaived,
         }),
       })
 
@@ -556,9 +565,18 @@ export function ReviewStep({
               <span>-${discount.toFixed(2)}</span>
             </div>
           )}
+          {noPostSurcharge > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Service Trip Fee (no post)</span>
+              <span className="text-gray-900">${noPostSurcharge.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Fuel Surcharge</span>
-            <span className="text-gray-900">${PRICING.fuel_surcharge.toFixed(2)}</span>
+            <span className={cn("text-gray-900", fuelSurchargeWaived && "line-through text-gray-400")}>
+              ${PRICING.fuel_surcharge.toFixed(2)}
+            </span>
+            {fuelSurchargeWaived && <span className="text-green-600 text-xs ml-1">Waived</span>}
           </div>
           {expediteFee > 0 && (
             <div className="flex justify-between text-sm">
@@ -661,8 +679,11 @@ export function ReviewStep({
         <div className="flex items-start gap-3">
           <Lock className="w-4 h-4 flex-shrink-0 mt-0.5 text-gray-400" />
           <p>
-            A fuel surcharge of ${PRICING.fuel_surcharge.toFixed(2)} is applied to all orders.
-            Your payment information is securely processed via Stripe.
+            {fuelSurchargeWaived
+              ? 'Fuel surcharge has been waived with your promo code.'
+              : `A fuel surcharge of $${PRICING.fuel_surcharge.toFixed(2)} is applied to all orders.`
+            }
+            {' '}Your payment information is securely processed via Stripe.
           </p>
         </div>
         <div className="border-t border-gray-200 pt-3">

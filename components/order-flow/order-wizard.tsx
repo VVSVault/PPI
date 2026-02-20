@@ -79,6 +79,7 @@ interface OrderWizardProps {
 
 export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
   const [currentStep, setCurrentStep] = useState(0)
+  const [highestStep, setHighestStep] = useState(0) // Track furthest step reached
   const [formData, setFormData] = useState<OrderFormData>(initialFormData)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -88,7 +89,9 @@ export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
 
   const goToNextStep = useCallback(() => {
     if (currentStep < steps.length - 1) {
-      setCurrentStep((prev) => prev + 1)
+      const nextStep = currentStep + 1
+      setCurrentStep(nextStep)
+      setHighestStep((prev) => Math.max(prev, nextStep))
     }
   }, [currentStep])
 
@@ -99,11 +102,11 @@ export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
   }, [currentStep])
 
   const goToStep = useCallback((stepIndex: number) => {
-    // Only allow going to completed steps or the current step
-    if (stepIndex <= currentStep) {
+    // Allow going to any step that has been visited (up to highestStep)
+    if (stepIndex <= highestStep) {
       setCurrentStep(stepIndex)
     }
-  }, [currentStep])
+  }, [highestStep])
 
   const canProceed = useCallback(() => {
     const step = steps[currentStep]
@@ -155,8 +158,26 @@ export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
           <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-pink-500 transition-all duration-300"
-              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+              style={{ width: `${((highestStep + 1) / steps.length) * 100}%` }}
             />
+          </div>
+          {/* Mobile step dots for quick navigation */}
+          <div className="flex justify-center gap-1.5 mt-2">
+            {steps.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => goToStep(index)}
+                disabled={index > highestStep}
+                className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  index === currentStep
+                    ? 'bg-pink-500 scale-125'
+                    : index <= highestStep
+                    ? 'bg-pink-300 hover:bg-pink-400 cursor-pointer'
+                    : 'bg-gray-200 cursor-not-allowed'
+                }`}
+              />
+            ))}
           </div>
         </div>
 
@@ -171,16 +192,16 @@ export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
                 <button
                   type="button"
                   onClick={() => goToStep(index)}
-                  disabled={index > currentStep}
+                  disabled={index > highestStep}
                   className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
-                    index < currentStep
-                      ? 'bg-pink-500 text-white hover:bg-pink-600 cursor-pointer'
-                      : index === currentStep
+                    index === currentStep
                       ? 'bg-pink-500 text-white ring-4 ring-pink-200'
+                      : index <= highestStep
+                      ? 'bg-pink-500 text-white hover:bg-pink-600 cursor-pointer'
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   }`}
                 >
-                  {index < currentStep ? (
+                  {index < currentStep && index <= highestStep ? (
                     <Check className="w-5 h-5" />
                   ) : (
                     index + 1
@@ -189,12 +210,12 @@ export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
                 <button
                   type="button"
                   onClick={() => goToStep(index)}
-                  disabled={index > currentStep}
+                  disabled={index > highestStep}
                   className={`absolute -bottom-6 whitespace-nowrap text-xs transition-colors ${
-                    index < currentStep
+                    index === currentStep
+                      ? 'text-gray-900 font-semibold'
+                      : index <= highestStep
                       ? 'text-gray-900 hover:text-pink-600 cursor-pointer'
-                      : index === currentStep
-                      ? 'text-gray-900'
                       : 'text-gray-400 cursor-not-allowed'
                   }`}
                 >
@@ -204,7 +225,7 @@ export function OrderWizard({ inventory, paymentMethods }: OrderWizardProps) {
               {index < steps.length - 1 && (
                 <div
                   className={`flex-1 h-0.5 mx-2 ${
-                    index < currentStep ? 'bg-pink-500' : 'bg-gray-200'
+                    index < highestStep ? 'bg-pink-500' : 'bg-gray-200'
                   }`}
                 />
               )}

@@ -26,6 +26,7 @@ export async function GET(
       include: {
         orderItems: true,
         postType: true,
+        promoCode: { select: { code: true } },
       },
     })
 
