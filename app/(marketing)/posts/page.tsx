@@ -12,8 +12,8 @@ const posts = [
     description:
       'Our classic white PVC post offers timeless elegance that complements any property style. Durable, weather-resistant, and maintenance-free.',
     installationFee: 55,
-    reinstallFee: 35,
     image: '/images/posts/white-post.png',
+    badge: 'Premium Vinyl',
     features: [
       'Premium PVC construction',
       '6\' height standard',
@@ -27,8 +27,8 @@ const posts = [
     description:
       'Modern sophistication with a sleek black finish. Perfect for upscale listings and agents who want a contemporary look.',
     installationFee: 55,
-    reinstallFee: 35,
     image: '/images/posts/black-post.png',
+    badge: 'Premium Vinyl',
     features: [
       'Premium PVC construction',
       '6\' height standard',
@@ -42,15 +42,30 @@ const posts = [
     description:
       'Stand out from the crowd with our signature pink post. A bold statement that gets noticed and remembered.',
     installationFee: 65,
-    reinstallFee: 40,
     image: '/images/posts/pink-post.png',
     featured: true,
+    badge: 'Premium Vinyl',
     features: [
       'Premium PVC construction',
       '6\' height standard',
       'Signature pink finish',
       'Includes hardware',
       'Exclusive design',
+    ],
+  },
+  {
+    name: 'Metal Frame Sign',
+    slug: 'metal-frame',
+    description:
+      'A budget-friendly option for standard real estate signage. Sturdy angle iron construction with a powder coated finish, designed to hold 18"h x 24"w signs.',
+    installationFee: 40,
+    image: '/images/posts/metal-frame.jpg',
+    badge: 'Standard',
+    features: [
+      'Angle iron construction',
+      'Powder coated finish',
+      'Fits 18"h x 24"w signs',
+      'Includes installation & pickup',
     ],
   },
 ]
@@ -104,13 +119,18 @@ export default function PostsPage() {
 
                   {/* Content */}
                   <CardContent className="p-8">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <h2 className="text-2xl font-bold text-gray-900">
                         {post.name}
                       </h2>
                       {post.featured && (
                         <span className="bg-pink-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
                           POPULAR
+                        </span>
+                      )}
+                      {post.badge && (
+                        <span className="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1 rounded-full">
+                          {post.badge}
                         </span>
                       )}
                     </div>
@@ -142,21 +162,13 @@ export default function PostsPage() {
                     {/* Pricing Table */}
                     <div className="mt-8 border border-gray-200 rounded-lg overflow-hidden">
                       <table className="w-full">
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody>
                           <tr>
                             <td className="px-4 py-3 text-sm text-gray-600">
                               Installation Fee
                             </td>
                             <td className="px-4 py-3 text-sm font-semibold text-gray-900 text-right">
                               ${post.installationFee}.00
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="px-4 py-3 text-sm text-gray-600">
-                              Reinstallation Fee
-                            </td>
-                            <td className="px-4 py-3 text-sm font-semibold text-gray-900 text-right">
-                              ${post.reinstallFee}.00
                             </td>
                           </tr>
                         </tbody>
